@@ -1,10 +1,10 @@
-# 🌸 Hololive Members Browser
+# Hololive Members Browser
 
 A Flutter application that lets you browse Hololive members in a card-based scroll list, view their full profiles, and bookmark your favorites — built as a hands-on introduction to **Flutter Provider**.
 
 ---
 
-## 📱 Features
+## Features
 
 - **Scroll List with Card Format** — Browse all Hololive members in a scrollable card list
 - **Profile Picture Backgrounds** — Each card features the members's Hololive profile picture as the background
@@ -12,17 +12,14 @@ A Flutter application that lets you browse Hololive members in a card-based scro
 - **Bookmark System** — Save your favorite member using the bookmark icon, powered by Flutter Provider
 
 ---
-## 📱 Features
+## Learning Goals
 
 ---
-## 🧠 Learning Goals
-
----
-## 🗂️ App Structure
+## App Structure
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -49,7 +46,7 @@ flutter run
 
 ---
 
-## 📦 Dependencies
+## Dependencies
 
 ```yaml
 dependencies:
@@ -59,17 +56,17 @@ dependencies:
 ```
 
 ---
-## 🔖 How Bookmarks Work
+## How Bookmarks Work
 
 ---
-## 📸 Screenshots
+## Screenshots
 
 ---
-## 👤 Author
+## Author
 
 Made with 💙 as part of a Flutter internship project.
 
 ---
-## 📄 License
+## License
 
 This project is for educational purposes only. All Hololive character names, images, and related assets belong to **Cover Corp**.
