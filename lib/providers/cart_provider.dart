@@ -3,7 +3,7 @@ import 'package:hololive_id_cards/consts.dart';
 
 class CartProvider extends ChangeNotifier {
   final List<Product> _items = [];
-
+ 
   List<Product> get items => _items;
 
   void addItem(Product item) {

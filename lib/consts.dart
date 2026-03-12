@@ -5,7 +5,7 @@ final List<Product> PRODUCTS = [
   Product(id: '2', name: 'Product 2', price: 20.0, color: Colors.blue),
   Product(id: '3', name: 'Product 3', price: 30.0, color: Colors.green),
 ];
-
+ 
 class Product {
   final String id;
   final String name;
