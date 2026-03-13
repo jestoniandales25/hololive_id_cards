@@ -48,9 +48,14 @@ app.*.map.json
 # Environment files
 .env
 .env.local
-.env.production
 
-# Generated files (contain encrypted key material)
+# Generated dart files - never commit these
 lib/core/env/env.g.dart
 lib/**/*.freezed.dart
 lib/**/*.g.dart
+
+# Flutter/Dart build files
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
