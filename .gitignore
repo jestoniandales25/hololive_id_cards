@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Generated files (contain encrypted key material)
+lib/core/env/env.g.dart
+lib/**/*.freezed.dart
+lib/**/*.g.dart
