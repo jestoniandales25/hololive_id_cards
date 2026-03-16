@@ -29,26 +29,19 @@ class MembersScreen extends StatelessWidget {
       ),
       body: Consumer<HololiveBloc>(
         builder: (context, bloc, _) {
-          // ── Loading ──────────────────────────────
           if (bloc.isLoading) {
             return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF00ADB5),
-              ),
+              child: CircularProgressIndicator(color: Color(0xFF00ADB5)),
             );
           }
 
-          // ── Error ────────────────────────────────
           if (bloc.state == BlocState.error) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    color: Colors.redAccent,
-                    size: 48,
-                  ),
+                  const Icon(Icons.error_outline,
+                      color: Colors.redAccent, size: 48),
                   const SizedBox(height: 12),
                   Text(
                     bloc.error ?? 'Something went wrong',
@@ -69,24 +62,18 @@ class MembersScreen extends StatelessWidget {
             );
           }
 
-          // ── Empty ────────────────────────────────
           if (bloc.members.isEmpty) {
             return const Center(
-              child: Text(
-                'No members found.',
-                style: TextStyle(color: Colors.white54),
-              ),
+              child: Text('No members found.',
+                  style: TextStyle(color: Colors.white54)),
             );
           }
 
-          // ── List ─────────────────────────────────
           return ListView.separated(
             padding: const EdgeInsets.all(12),
             itemCount: bloc.members.length,
-            separatorBuilder: (_, __) => const Divider(
-              color: Color(0xFF1A1A2E),
-              height: 1,
-            ),
+            separatorBuilder: (_, __) =>
+                const Divider(color: Color(0xFF1A1A2E), height: 1),
             itemBuilder: (_, index) =>
                 _MemberTile(member: bloc.members[index]),
           );
@@ -106,8 +93,7 @@ class _MemberTile extends StatelessWidget {
     return ListTile(
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-
-      // ── Avatar ───────────────────────────────────
+      // ── Avatar ──────────────────────────────────
       leading: CircleAvatar(
         radius: 28,
         backgroundColor: const Color(0xFF1A1A2E),
@@ -132,45 +118,37 @@ class _MemberTile extends StatelessWidget {
           ),
         ),
       ),
-
       // ── Name & Group ─────────────────────────────
       title: Text(
         member.displayName,
         style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
+            color: Colors.white, fontWeight: FontWeight.w600),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (member.englishName != null && member.englishName != member.name)
-            Text(
-              member.name,
-              style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 12,
-              ),
-            ),
+          if (member.englishName != null &&
+              member.englishName != member.name)
+            Text(member.name,
+                style:
+                    const TextStyle(color: Colors.white54, fontSize: 12)),
           if (member.group != null)
-            Text(
-              member.group!,
-              style: const TextStyle(
-                color: Color(0xFF00ADB5),
-                fontSize: 11,
-              ),
-            ),
+            Text(member.group!,
+                style: const TextStyle(
+                    color: Color(0xFF00ADB5), fontSize: 11)),
         ],
       ),
-
-      // ── Subscribers ──────────────────────────────
-      trailing: Text(
-        member.formattedSubs,
-        style: const TextStyle(
-          color: Colors.white60,
-          fontSize: 12,
-        ),
-      ),
+      trailing: Text(member.formattedSubs,
+          style: const TextStyle(color: Colors.white60, fontSize: 12)),
+      // ── Navigate to Detail ───────────────────────
+      onTap: () {
+        context.read<HololiveBloc>().loadVideos(member.id);
+        Navigator.pushNamed(
+          context,
+          '/detail',
+          arguments: member,
+        );
+      },
     );
   }
 }
