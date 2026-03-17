@@ -16,15 +16,35 @@ A Flutter application that lets you browse Hololive members in a card-based scro
 
 ---
 ## App Structure
-
+lib/
+- blocs/ (Bloc Provider Management)
+- core/
+  - env/ (Envireonment Management (e.g. .env))
+- data/
+  - models/ (Handles Data Models (e.g. Member Model))
+  - repositories/ (Handles Data Logic e.g Member Repository)
+- ui/
+  - screens/ (App Screens e.g. home, details)
 ---
 
 ## Getting Started
 
-### Prerequisites
-
+### Prerequisites 
+#### Dependencies
 - Flutter SDK `>=3.11.0`
 - Dart `>=3.11.0`
+- provider `>=6.1.5+1`
+- http `>=1.6.0` 
+- envied `>=1.3.3`
+- freezed_annotation `>=3.1.0`
+- json_annotation `>=4.11.0`
+- url_launcher `>=6.3.2`
+
+#### Dev_Dependencies
+- envied_generator `>=1.3.3`
+- build_runner `>=2.12.2`
+- freezed `>=3.2.5`
+- json_serializable `>=6.13.0`
 
 ### Installation
 
