@@ -1,6 +1,6 @@
 # Hololive Members Browser
 
-A Flutter application that lets you browse Hololive members in a card-based scroll list, view their full profiles, and bookmark your favorites — built as a hands-on introduction to **Flutter Provider**.
+A Flutter application that lets you browse Hololive members in a card-based scroll list, view their recent videos, and bookmark your favorite videos — built as a hands-on introduction to **Flutter Provider**.
 
 ---
 
@@ -8,8 +8,8 @@ A Flutter application that lets you browse Hololive members in a card-based scro
 
 - **Scroll List with Card Format** — Browse all Hololive members in a scrollable card list
 - **Profile Picture Backgrounds** — Each card features the members's Hololive profile picture as the background
-- **Hololive Member's Detail Page** — Tap any card to navigate to a full information page about the selected member
-- **Bookmark System** — Save your favorite member using the bookmark icon, powered by Flutter Provider
+- **Hololive Member's Video Page** — Tap any card to navigate to a recent video page about the selected member
+- **Bookmark System** — Save your favorite member's video using the bookmark icon, powered by Flutter Bloc Provider
 
 ---
 ## Learning Goals
@@ -33,18 +33,10 @@ lib/
 #### Dependencies
 - Flutter SDK `>=3.11.0`
 - Dart `>=3.11.0`
-- provider `>=6.1.5+1`
-- http `>=1.6.0` 
-- envied `>=1.3.3`
-- freezed_annotation `>=3.1.0`
-- json_annotation `>=4.11.0`
-- url_launcher `>=6.3.2`
+
 
 #### Dev_Dependencies
-- envied_generator `>=1.3.3`
-- build_runner `>=2.12.2`
-- freezed `>=3.2.5`
-- json_serializable `>=6.13.0`
+
 
 ### Installation
 
@@ -72,7 +64,18 @@ flutter run
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.2
+  provider: ^6.1.5+1
+  http: ^1.6.0
+  envied: ^1.3.3
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.11.0
+  url_launcher: ^6.3.2
+
+dev_dependencies:
+  envied_generator: ^1.3.3
+  build_runner: ^2.12.2
+  freezed: ^3.2.5
+  json_serializable: ^6.13.0
 ```
 
 ---
