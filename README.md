@@ -85,6 +85,8 @@ HOLODEX_API_KEY=your_api_key_here
 ```
 
 Generate the encrypted key and model files:
+This project uses `build_runner` to generate encrypted keys and data models.
+Run this **once after cloning** and **again after any model changes**:
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
