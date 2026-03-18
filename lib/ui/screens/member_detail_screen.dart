@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../blocs/hololive_bloc.dart';
 import '../../data/models/video_model.dart';
 
-class MemberDetailScreen extends StatelessWidget {
-  const MemberDetailScreen({super.key});
+class HololiveDetailScreen extends StatelessWidget {
+  const HololiveDetailScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final member =
-        ModalRoute.of(context)!.settings.arguments as MemberModel;
+    final member = ModalRoute.of(context)!.settings.arguments as MemberModel;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
@@ -68,8 +67,10 @@ class _MemberInfoPanel extends StatelessWidget {
               // Back button
               SafeArea(
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white),
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                  ),
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
@@ -89,7 +90,9 @@ class _MemberInfoPanel extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: const Color(0xFF00ADB5), width: 3),
+                        color: const Color(0xFF00ADB5),
+                        width: 3,
+                      ),
                     ),
                     child: CircleAvatar(
                       radius: 40,
@@ -134,7 +137,9 @@ class _MemberInfoPanel extends StatelessWidget {
                           Text(
                             member.name,
                             style: const TextStyle(
-                                color: Colors.white54, fontSize: 12),
+                              color: Colors.white54,
+                              fontSize: 12,
+                            ),
                           ),
                         const SizedBox(height: 4),
                         Row(
@@ -196,7 +201,7 @@ class _VideosPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HololiveBloc>(
+    return Consumer<HololiveBlocProvider>(
       builder: (context, bloc, _) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -206,8 +211,11 @@ class _VideosPanel extends StatelessWidget {
               padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
-                  Icon(Icons.play_circle_outline_rounded,
-                      color: Color(0xFF00ADB5), size: 20),
+                  Icon(
+                    Icons.play_circle_outline_rounded,
+                    color: Color(0xFF00ADB5),
+                    size: 20,
+                  ),
                   SizedBox(width: 8),
                   Text(
                     'Recent Streams',
@@ -226,22 +234,25 @@ class _VideosPanel extends StatelessWidget {
               child: bloc.isLoadingVideos
                   ? const Center(
                       child: CircularProgressIndicator(
-                          color: Color(0xFF00ADB5)),
+                        color: Color(0xFF00ADB5),
+                      ),
                     )
                   : bloc.videos.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No videos found.',
-                            style: TextStyle(color: Colors.white38),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 4),
-                          itemCount: bloc.videos.length,
-                          itemBuilder: (_, index) =>
-                              _VideoCard(video: bloc.videos[index]),
-                        ),
+                  ? const Center(
+                      child: Text(
+                        'No videos found.',
+                        style: TextStyle(color: Colors.white38),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
+                      itemCount: bloc.videos.length,
+                      itemBuilder: (_, index) =>
+                          _VideoCard(video: bloc.videos[index]),
+                    ),
             ),
           ],
         );
@@ -278,7 +289,8 @@ class _VideoCard extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.horizontal(
-                      left: Radius.circular(12)),
+                    left: Radius.circular(12),
+                  ),
                   child: Image.network(
                     video.thumbnailUrl,
                     width: 120,
@@ -288,8 +300,10 @@ class _VideoCard extends StatelessWidget {
                       width: 120,
                       height: 72,
                       color: const Color(0xFF0D0D0D),
-                      child: const Icon(Icons.video_library_rounded,
-                          color: Colors.white24),
+                      child: const Icon(
+                        Icons.video_library_rounded,
+                        color: Colors.white24,
+                      ),
                     ),
                   ),
                 ),
@@ -300,7 +314,9 @@ class _VideoCard extends StatelessWidget {
                     left: 4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.red,
                         borderRadius: BorderRadius.circular(4),
@@ -308,9 +324,10 @@ class _VideoCard extends StatelessWidget {
                       child: const Text(
                         'LIVE',
                         style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -321,7 +338,9 @@ class _VideoCard extends StatelessWidget {
                     right: 4,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 2),
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black87,
                         borderRadius: BorderRadius.circular(4),
@@ -329,7 +348,9 @@ class _VideoCard extends StatelessWidget {
                       child: Text(
                         video.formattedDuration,
                         style: const TextStyle(
-                            color: Colors.white, fontSize: 9),
+                          color: Colors.white,
+                          fontSize: 9,
+                        ),
                       ),
                     ),
                   ),
@@ -356,8 +377,11 @@ class _VideoCard extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Icons.play_arrow_rounded,
-                            color: Color(0xFF00ADB5), size: 14),
+                        const Icon(
+                          Icons.play_arrow_rounded,
+                          color: Color(0xFF00ADB5),
+                          size: 14,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           video.isUpcoming ? 'Upcoming' : 'Watch',
@@ -398,7 +422,10 @@ class _Badge extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-            color: color, fontSize: 10, fontWeight: FontWeight.w600),
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
