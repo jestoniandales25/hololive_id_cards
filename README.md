@@ -36,8 +36,8 @@ lib/
 │   └── hololive_bloc_provider.dart
 ├── core/
 │   └── env/                           # Environment & API key management
-│       ├── env.dart                   # Envied annotations (you write this)
-│       └── env.g.dart                 # Generated encrypted key (git-ignored)
+│       ├── env.dart                   # Envied annotations 
+│       └── env.g.dart                 # Generated encrypted key 
 ├── data/
 │   ├── models/                        # Freezed data models
 │   │   ├── member_model.dart
