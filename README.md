@@ -107,7 +107,7 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.1.5+1         # State management (Bloc pattern)
-  dio: ^5.7.0                 # HTTP client (replaces http package)
+  dio: ^5.7.0                 # HTTP client 
   envied: ^1.3.3              # Encrypted API key management
   freezed_annotation: ^3.1.0  # Immutable data models
   json_annotation: ^4.11.0    # JSON serialization
