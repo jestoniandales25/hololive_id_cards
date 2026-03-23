@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
 import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:provider/provider.dart';
@@ -30,11 +31,7 @@ class HololiveDashboard extends StatelessWidget {
         color: Color(0xFF1A1A2E),
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black45,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -44,7 +41,7 @@ class HololiveDashboard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Hololive',
+                'hololive',
                 style: TextStyle(
                   color: Color(0xFF00ADB5),
                   fontSize: 26,
@@ -60,25 +57,70 @@ class HololiveDashboard extends StatelessWidget {
               ),
             ],
           ),
-          Consumer<HololiveBlocProvider>(
-            builder: (_, bloc, __) => GestureDetector(
-              onTap: bloc.refresh,
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF00ADB5).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF00ADB5).withOpacity(0.4),
+          Row(
+            children: [
+              // ✅ Bookmark screen button
+              Consumer<BookmarkBlocProvider>(
+                builder: (_, bloc, __) => GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/bookmarks'),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00ADB5).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF00ADB5).withOpacity(0.4),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        const Icon(
+                          Icons.bookmark_rounded,
+                          color: Color(0xFF00ADB5),
+                          size: 20,
+                        ),
+                        // Badge showing total bookmark count
+                        if (bloc.allBookmarks.isNotEmpty)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.redAccent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-                child: const Icon(
-                  Icons.refresh_rounded,
-                  color: Color(0xFF00ADB5),
-                  size: 20,
+              ),
+              const SizedBox(width: 8),
+              // Refresh button
+              Consumer<HololiveBlocProvider>(
+                builder: (_, bloc, __) => GestureDetector(
+                  onTap: bloc.refresh,
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00ADB5).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF00ADB5).withOpacity(0.4),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.refresh_rounded,
+                      color: Color(0xFF00ADB5),
+                      size: 20,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),

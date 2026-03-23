@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
 import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/video_model.dart';
 
 class HololiveDetailScreen extends StatelessWidget {
@@ -30,7 +30,8 @@ class HololiveDetailScreen extends StatelessWidget {
           ),
 
           // ── BOTTOM HALF: Videos (scrollable) ─────
-          const Expanded(child: _VideosPanel()),
+          // ✅ pass member so VideoCard knows which channelId to use
+          Expanded(child: _VideosPanel(member: member)),
         ],
       ),
     );
@@ -52,7 +53,6 @@ class _MemberInfoPanel extends StatelessWidget {
           // Banner + back button
           Stack(
             children: [
-              // Banner background
               Container(
                 height: 120,
                 width: double.infinity,
@@ -64,7 +64,6 @@ class _MemberInfoPanel extends StatelessWidget {
                   ),
                 ),
               ),
-              // Back button
               SafeArea(
                 child: IconButton(
                   icon: const Icon(
@@ -83,7 +82,6 @@ class _MemberInfoPanel extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar — overlaps banner
                 Transform.translate(
                   offset: const Offset(0, -30),
                   child: Container(
@@ -118,7 +116,6 @@ class _MemberInfoPanel extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
 
-                // Name + group + subs
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(top: 8),
@@ -197,7 +194,9 @@ class _MemberInfoPanel extends StatelessWidget {
 
 // ── BOTTOM PANEL ───────────────────────────────────────
 class _VideosPanel extends StatelessWidget {
-  const _VideosPanel();
+  final MemberModel member;   // ✅ added
+
+  const _VideosPanel({required this.member});  // ✅ added
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +205,6 @@ class _VideosPanel extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section header
             const Padding(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
@@ -229,7 +227,6 @@ class _VideosPanel extends StatelessWidget {
               ),
             ),
 
-            // Videos list
             Expanded(
               child: bloc.isLoadingVideos
                   ? const Center(
@@ -238,21 +235,23 @@ class _VideosPanel extends StatelessWidget {
                       ),
                     )
                   : bloc.videos.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No videos found.',
-                        style: TextStyle(color: Colors.white38),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 4,
-                      ),
-                      itemCount: bloc.videos.length,
-                      itemBuilder: (_, index) =>
-                          _VideoCard(video: bloc.videos[index]),
-                    ),
+                      ? const Center(
+                          child: Text(
+                            'No videos found.',
+                            style: TextStyle(color: Colors.white38),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 4,
+                          ),
+                          itemCount: bloc.videos.length,
+                          itemBuilder: (_, index) => _VideoCard(
+                            video: bloc.videos[index],
+                            member: member,    // ✅ pass member to card
+                          ),
+                        ),
             ),
           ],
         );
@@ -264,18 +263,21 @@ class _VideosPanel extends StatelessWidget {
 // ── VIDEO CARD ─────────────────────────────────────────
 class _VideoCard extends StatelessWidget {
   final VideoModel video;
+  final MemberModel member;   // ✅ added
 
-  const _VideoCard({required this.video});
+  const _VideoCard({
+    required this.video,
+    required this.member,     // ✅ added
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () async {
-        final url = Uri.parse(video.youtubeUrl);
-        if (await canLaunchUrl(url)) {
-          await launchUrl(url, mode: LaunchMode.externalApplication);
-        }
-      },
+      onTap: () => Navigator.pushNamed(
+        context,
+        '/video-player',
+        arguments: video,
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
@@ -284,7 +286,7 @@ class _VideoCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Thumbnail
+            // ── Thumbnail ──────────────────────────
             Stack(
               children: [
                 ClipRRect(
@@ -307,7 +309,6 @@ class _VideoCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Live badge
                 if (video.isLive)
                   Positioned(
                     top: 4,
@@ -331,7 +332,6 @@ class _VideoCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                // Duration badge
                 if (video.formattedDuration.isNotEmpty)
                   Positioned(
                     bottom: 4,
@@ -357,13 +357,14 @@ class _VideoCard extends StatelessWidget {
               ],
             ),
 
-            // Title
+            // ── Info + Bookmark ─────────────────────
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Title
                     Text(
                       video.title,
                       maxLines: 2,
@@ -375,8 +376,11 @@ class _VideoCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 6),
+
+                    // ✅ Watch + Bookmark row
                     Row(
                       children: [
+                        // Watch label
                         const Icon(
                           Icons.play_arrow_rounded,
                           color: Color(0xFF00ADB5),
@@ -389,6 +393,31 @@ class _VideoCard extends StatelessWidget {
                             color: Color(0xFF00ADB5),
                             fontSize: 11,
                           ),
+                        ),
+
+                        const Spacer(),
+
+                        // ✅ Bookmark icon toggle
+                        Consumer<BookmarkBlocProvider>(
+                          builder: (context, bookmarkBloc, _) {
+                            final isBookmarked =
+                                bookmarkBloc.isBookmarked(video.id);
+                            return GestureDetector(
+                              onTap: () => bookmarkBloc.toggleBookmark(
+                                member.id,  // ✅ saves under this member
+                                video,
+                              ),
+                              child: Icon(
+                                isBookmarked
+                                    ? Icons.bookmark_rounded
+                                    : Icons.bookmark_border_rounded,
+                                color: isBookmarked
+                                    ? const Color(0xFF00ADB5)
+                                    : Colors.white38,
+                                size: 18,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

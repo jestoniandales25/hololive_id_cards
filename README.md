@@ -11,7 +11,9 @@ to **Flutter Provider (Bloc Pattern)**.
 - **Card-Based Member Grid** — Browse all Hololive talents in a 2-column scrollable playing card layout
 - **Profile Picture Backgrounds** — Each card features the member's official Hololive profile picture
 - **Member Video Page** — Tap any card to navigate to a detail screen showing recent streams
-- **Bookmark System** — *(🚧 In Progress)* Save your favorite member videos using the bookmark icon
+- **In-App Video Player** — Watch videos inside the app using `youtube_player_iframe`
+- **Bookmark System** — Save your favorite videos per member; view all bookmarks in a dedicated screen
+- **Persistent Bookmarks** — Bookmarks survive app restarts using `shared_preferences`
 - **Secured API Key** — API key is encrypted at build time using `envied` with `obfuscate: true`
 - **Immutable Models** — Data models generated with `freezed` for type-safe, boilerplate-free code
 - **Dio HTTP Client** — Network requests powered by `dio` with interceptors, timeouts, and typed error handling
@@ -26,33 +28,38 @@ to **Flutter Provider (Bloc Pattern)**.
 - Practice **Flutter navigation** with named routes and `ModalRoute` arguments
 - Consume a **real REST API** (Holodex) using `dio` with proper error handling and loading states
 - Understand the difference between **networking** (`dio`) and **security** (`envied`) packages
+- Implement **persistent local storage** using `shared_preferences`
+- Use **`MultiProvider`** to manage multiple blocs across the entire app
 
 ---
 
 ## App Structure
 ```
 lib/
-├── blocs/                             # Bloc Provider (ChangeNotifier)
-│   └── hololive_bloc_provider.dart
+├── blocs/                              # Bloc Providers (ChangeNotifier)
+│   ├── hololive_bloc_provider.dart     # Members & videos state
+│   └── bookmark_bloc.dart             # Bookmark state + SharedPreferences
 ├── core/
-│   └── env/                           # Environment & API key management
-│       ├── env.dart                   # Envied annotations 
-│       └── env.g.dart                 # Generated encrypted key 
+│   └── env/                            # Environment & API key management
+│       ├── env.dart                    # Envied annotations (you write this)
+│       └── env.g.dart                  # Generated encrypted key (git-ignored)
 ├── data/
-│   ├── models/                        # Freezed data models
+│   ├── models/                         # Freezed data models
 │   │   ├── member_model.dart
-│   │   ├── member_model.freezed.dart  # Generated
-│   │   ├── member_model.g.dart        # Generated
+│   │   ├── member_model.freezed.dart   # Generated
+│   │   ├── member_model.g.dart         # Generated
 │   │   ├── video_model.dart
-│   │   ├── video_model.freezed.dart   # Generated
-│   │   └── video_model.g.dart         # Generated
-│   └── repositories/                  # API & data logic
-│       └── hololive_repository.dart   # Uses Dio for HTTP requests
+│   │   ├── video_model.freezed.dart    # Generated
+│   │   └── video_model.g.dart          # Generated
+│   └── repositories/                   # API & data logic
+│       └── hololive_repository.dart    # Uses Dio for HTTP requests
 └── ui/
-    └── screens/                       # App screens
+    └── screens/                        # App screens
         ├── splash_screen.dart
-        ├── hololive_dashboard.dart
-        └── member_detail_screen.dart
+        ├── hololive_dashboard.dart     # Member grid + bookmark nav
+        ├── member_detail_screen.dart   # Member info + video list + bookmark toggle
+        ├── video_player_screen.dart    # In-app YouTube player
+        └── bookmark_screen.dart       # All saved bookmarks
 ```
 
 ---
@@ -106,23 +113,68 @@ flutter run
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.5+1         # State management (Bloc pattern)
-  dio: ^5.7.0                 # HTTP client 
-  envied: ^1.3.3              # Encrypted API key management
-  freezed_annotation: ^3.1.0  # Immutable data models
-  json_annotation: ^4.11.0    # JSON serialization
-  url_launcher: ^6.3.2        # Open YouTube links
+  provider: ^6.1.5+1              # State management (Bloc pattern)
+  dio: ^5.7.0                      # HTTP client
+  envied: ^1.3.3                   # Encrypted API key management
+  freezed_annotation: ^3.1.0       # Immutable data models
+  json_annotation: ^4.11.0         # JSON serialization
+  url_launcher: ^6.3.2             # Open YouTube links
+  youtube_player_iframe: ^5.1.1    # In-app YouTube player
+  shared_preferences: ^2.3.2       # Persistent bookmark storage
 
 dev_dependencies:
-  envied_generator: ^1.3.3    # Envied code generator
-  build_runner: ^2.12.2       # Code generation runner
-  freezed: ^3.2.5             # Freezed code generator
-  json_serializable: ^6.13.0  # JSON code generator
+  envied_generator: ^1.3.3         # Envied code generator
+  build_runner: ^2.12.2            # Code generation runner
+  freezed: ^3.2.5                  # Freezed code generator
+  json_serializable: ^6.13.0       # JSON code generator
 ```
 
 ---
 ## How Bookmarks Work
+Bookmarks are managed by `BookmarkBloc` using `ChangeNotifier` + `SharedPreferences`:
 
+- Tap the **🔖 icon** on any video card in the detail screen to save it
+- The icon turns **teal** when bookmarked and **grey** when not
+- Bookmarks are **stored per member** — the detail screen only shows that member's saves
+- The **🔖 icon on the dashboard** navigates to the bookmark screen showing **all saved videos** sorted by most recently added
+- Bookmarks **survive app restarts** — saved permanently on device via `SharedPreferences`
+- Tap the bookmark icon again to **remove** it
+```
+Detail Screen (member)           Dashboard
+  └── 🔖 per video                 └── 🔖 header icon
+       saves under member.id              navigates to BookmarkScreen
+                                               shows ALL bookmarks
+                                               sorted by latest
+```
+
+## How `freezed` Models Work
+
+`freezed` generates all boilerplate automatically — you only write the field declarations:
+```dart
+// You write this:
+@freezed
+class MemberModel with _$MemberModel {
+  const factory MemberModel({
+    required String id,
+    required String name,
+    // ...
+  }) = _MemberModel;
+
+  factory MemberModel.fromJson(Map json) =>
+      _$MemberModelFromJson(json);
+}
+
+// You get these for free ✅
+member.copyWith(name: 'New Name'); // immutable update
+member1 == member2;                // value equality
+print(member);                     // readable toString
+member.toJson();                   // JSON serialization
+```
+
+Re-run whenever you change a model:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
 ---
 ## Screenshots
 
