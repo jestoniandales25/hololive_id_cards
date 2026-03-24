@@ -29,9 +29,15 @@ class HololiveDashboard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       decoration: const BoxDecoration(
         color: Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(24),
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black45, blurRadius: 10, offset: Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
@@ -51,15 +57,20 @@ class HololiveDashboard extends StatelessWidget {
               ),
               Consumer<HololiveBlocProvider>(
                 builder: (_, bloc, __) => Text(
-                  '${bloc.members.length} talents',
-                  style: const TextStyle(color: Colors.white38, fontSize: 13),
+                  bloc.isLoading
+                      ? 'Loading...'
+                      : '${bloc.members.length} talents',
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],
           ),
           Row(
             children: [
-              // ✅ Bookmark screen button
+              // Bookmark button
               Consumer<BookmarkBlocProvider>(
                 builder: (_, bloc, __) => GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/bookmarks'),
@@ -79,7 +90,6 @@ class HololiveDashboard extends StatelessWidget {
                           color: Color(0xFF00ADB5),
                           size: 20,
                         ),
-                        // Badge showing total bookmark count
                         if (bloc.allBookmarks.isNotEmpty)
                           Positioned(
                             right: 0,
@@ -131,11 +141,9 @@ class HololiveDashboard extends StatelessWidget {
   Widget _buildBody() {
     return Consumer<HololiveBlocProvider>(
       builder: (context, bloc, _) {
-        // Loading
+        // ✅ Skeleton loading
         if (bloc.isLoading) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF00ADB5)),
-          );
+          return const _SkeletonGrid();
         }
 
         // Error
@@ -144,11 +152,8 @@ class HololiveDashboard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  color: Colors.redAccent,
-                  size: 48,
-                ),
+                const Icon(Icons.error_outline,
+                    color: Colors.redAccent, size: 48),
                 const SizedBox(height: 12),
                 Text(
                   bloc.error ?? 'Something went wrong',
@@ -179,24 +184,186 @@ class HololiveDashboard extends StatelessWidget {
           );
         }
 
-        // 2-column playing card grid
+        // ✅ Real card grid
         return GridView.builder(
           padding: const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // 2 cards per row
+            crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
-            childAspectRatio: 0.62, // portrait card ratio
+            childAspectRatio: 0.62,
           ),
           itemCount: bloc.members.length,
-          itemBuilder: (_, index) => _MemberCard(member: bloc.members[index]),
+          itemBuilder: (_, index) =>
+              _MemberCard(member: bloc.members[index]),
         );
       },
     );
   }
 }
 
-// ── Playing Card ────────────────────────────────────────
+// ── Skeleton Grid ───────────────────────────────────────
+class _SkeletonGrid extends StatelessWidget {
+  const _SkeletonGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      physics: const NeverScrollableScrollPhysics(), // ✅ no scroll during loading
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 0.62,
+      ),
+      itemCount: 10,  // show 10 skeleton cards
+      itemBuilder: (_, __) => const _SkeletonCard(),
+    );
+  }
+}
+
+// ── Skeleton Card ───────────────────────────────────────
+class _SkeletonCard extends StatefulWidget {
+  const _SkeletonCard();
+
+  @override
+  State<_SkeletonCard> createState() => _SkeletonCardState();
+}
+
+class _SkeletonCardState extends State<_SkeletonCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    // ✅ Shimmer pulse animation
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
+
+    _animation = Tween<double>(begin: 0.3, end: 0.7).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (_, __) {
+        final shimmerColor =
+            Colors.white.withOpacity(_animation.value);
+
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1A1A2E),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFF00ADB5).withOpacity(0.1),
+            ),
+          ),
+          child: Column(
+            children: [
+              // ── Image placeholder ──────────────────
+              Expanded(
+                flex: 5,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: shimmerColor.withOpacity(_animation.value * 0.3),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      Icons.person_rounded,
+                      color: Colors.white.withOpacity(0.05),
+                      size: 48,
+                    ),
+                  ),
+                ),
+              ),
+
+              // ── Text placeholders ──────────────────
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Name placeholder
+                      Container(
+                        height: 12,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: shimmerColor.withOpacity(
+                              _animation.value * 0.3),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // JP name placeholder
+                      Container(
+                        height: 10,
+                        width: 80,
+                        decoration: BoxDecoration(
+                          color: shimmerColor.withOpacity(
+                              _animation.value * 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Subs placeholder
+                      Row(
+                        children: [
+                          Container(
+                            height: 10,
+                            width: 10,
+                            decoration: BoxDecoration(
+                              color: shimmerColor.withOpacity(
+                                  _animation.value * 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            height: 10,
+                            width: 60,
+                            decoration: BoxDecoration(
+                              color: shimmerColor.withOpacity(
+                                  _animation.value * 0.2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ── Member Card ─────────────────────────────────────────
 class _MemberCard extends StatelessWidget {
   final MemberModel member;
 
@@ -207,7 +374,11 @@ class _MemberCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.read<HololiveBlocProvider>().loadVideos(member.id);
-        Navigator.pushNamed(context, '/member-detail', arguments: member);
+        Navigator.pushNamed(
+          context,
+          '/member-detail',
+          arguments: member,
+        );
       },
       child: Container(
         decoration: BoxDecoration(
@@ -232,13 +403,12 @@ class _MemberCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // ── Card Top: Avatar fills most of card ──
+            // ── Card Top: Avatar ───────────────────
             Expanded(
               flex: 5,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Avatar image fills top
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
@@ -264,7 +434,7 @@ class _MemberCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Gradient fade at bottom of image
+                  // Gradient fade
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -286,21 +456,20 @@ class _MemberCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Group badge top-left
+                  // Group badge
                   if (member.group != null)
                     Positioned(
                       top: 8,
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 7,
-                          vertical: 3,
-                        ),
+                            horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.65),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF00ADB5).withOpacity(0.6),
+                            color:
+                                const Color(0xFF00ADB5).withOpacity(0.6),
                           ),
                         ),
                         child: Text(
@@ -314,7 +483,7 @@ class _MemberCard extends StatelessWidget {
                       ),
                     ),
 
-                  // Active dot top-right
+                  // Active dot
                   Positioned(
                     top: 8,
                     right: 8,
@@ -342,7 +511,7 @@ class _MemberCard extends StatelessWidget {
               ),
             ),
 
-            // ── Card Bottom: Info ─────────────────────
+            // ── Card Bottom: Info ──────────────────
             Expanded(
               flex: 2,
               child: Padding(
@@ -351,7 +520,6 @@ class _MemberCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Name
                     Text(
                       member.displayName,
                       maxLines: 1,
@@ -364,8 +532,6 @@ class _MemberCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 3),
-
-                    // JP name
                     if (member.englishName != null &&
                         member.name != member.displayName)
                       Text(
@@ -378,10 +544,7 @@ class _MemberCard extends StatelessWidget {
                           fontSize: 10,
                         ),
                       ),
-
                     const SizedBox(height: 6),
-
-                    // Subscriber count
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
