@@ -51,7 +51,7 @@ class HololiveRepository {
         '/channels/$channelId/videos',
         queryParameters: {
           'limit': 100, // increased to fetch more videos
-          'status': 'past',
+          'status': 'live,upcoming,past',
           'type': 'stream',
           'order': 'latest',
         },
@@ -76,7 +76,7 @@ class HololiveRepository {
         '/channels/$channelId/videos',
         queryParameters: {
           'limit': 100, // increased to fetch more base videos to filter for songs
-          'status': 'past',
+          'status': 'live,upcoming,past',
           'type': 'stream,clip', // getting both streams and clips to maximize chance of finding songs
           'order': 'latest',
         },
