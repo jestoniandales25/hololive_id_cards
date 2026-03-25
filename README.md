@@ -1,8 +1,8 @@
 # Hololive Members Browser
 
 A Flutter application that lets you browse Hololive VTuber members in a card-based scroll list,
-view their recent streams, and bookmark your favorite videos — built as a hands-on introduction
-to **Flutter Provider (Bloc Pattern)**.
+view their recent streams and songs, and bookmark your favorite videos — built as a hands-on introduction
+to the **flutter_bloc** state management library.
 
 ---
 
@@ -19,29 +19,30 @@ to **Flutter Provider (Bloc Pattern)**.
 - **Secured API Key** — API key is encrypted at build time using `envied` with `obfuscate: true`
 - **Immutable Models** — Data models generated with `freezed` for type-safe, boilerplate-free code
 - **Dio HTTP Client** — Network requests powered by `dio` with interceptors, timeouts, and typed error handling
-- **Member Music Page** — From Video Page you can tap the Music tab button to navigate the Music Page.
+- **Skeleton Loading** — Smooth shimmer effects while fetching data for a polished UI
+- **Member Detail Tabs** — Toggle seamlessly between a member's recent "Streams" and "Songs"
 
 ---
 
 ## Learning Goals
 
-- Understand and implement the **Provider Bloc Pattern** (`ChangeNotifier`)
+- Understand and implement the **flutter_bloc** pattern (State, Events, and Blocs)
 - Learn how to **secure API keys** using `envied` instead of plain `.env` files
 - Use **`freezed`** for immutable data models with auto-generated `fromJson`, `copyWith`, and `==`
 - Practice **Flutter navigation** with named routes and `ModalRoute` arguments
 - Consume a **real REST API** (Holodex) using `dio` with proper error handling and loading states
 - Understand the difference between **networking** (`dio`) and **security** (`envied`) packages
 - Implement **persistent local storage** using `shared_preferences`
-- Use **`MultiProvider`** to manage multiple blocs across the entire app
+- Use **`MultiBlocProvider`** and **`BlocBuilder`** to construct a highly reactive UI layer
 
 ---
 
 ## App Structure
 ```
 lib/
-├── blocs/                              # Bloc Providers (ChangeNotifier)
-│   ├── hololive_bloc_provider.dart     # Members & videos state
-│   └── bookmark_bloc.dart             # Bookmark state + SharedPreferences
+├── blocs/                              # flutter_bloc implementations
+│   ├── hololive/                       # Member, video, and song states
+│   └── bookmark/                       # Bookmark state + SharedPreferences
 ├── core/
 │   └── env/                            # Environment & API key management
 │       ├── env.dart                    # Envied annotations (you write this)
@@ -60,7 +61,7 @@ lib/
     └── screens/                        # App screens
         ├── splash_screen.dart
         ├── hololive_dashboard.dart     # Member grid + bookmark nav
-        ├── member_detail_screen.dart   # Member info + video list + bookmark toggle
+        ├── member_detail_screen.dart   # Stream & Song tabs + Video list + Bookmark toggle
         ├── video_player_screen.dart    # In-app YouTube player
         └── bookmark_screen.dart       # All saved bookmarks
 ```
@@ -116,7 +117,8 @@ flutter run
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.1.5+1              # State management (Bloc pattern)
+  flutter_bloc: ^8.1.6             # Strict BLoC pattern state management
+  equatable: ^2.0.5                # Value equality for Bloc states
   dio: ^5.7.0                      # HTTP client
   envied: ^1.3.3                   # Encrypted API key management
   freezed_annotation: ^3.1.0       # Immutable data models
@@ -135,7 +137,7 @@ dev_dependencies:
 ---
 ## How Live Streams Work
 
-Live stream detection is handled by `HololiveBlocProvider` using `Timer.periodic`:
+Live stream detection dynamically updates the UI based on YouTube data:
 
 - Entering a member's detail screen **automatically starts polling** the Holodex `/live` endpoint
 - If the member is **currently live**, a pulsing 🔴 indicator appears above the recent streams list
@@ -158,7 +160,7 @@ stopLivePolling()             ← timer cancelled ✅
 
 ---
 ## How Bookmarks Work
-Bookmarks are managed by `BookmarkBloc` using `ChangeNotifier` + `SharedPreferences`:
+Bookmarks are managed by `BookmarkBloc` via strict `Events` + `SharedPreferences`:
 
 - Tap the **🔖 icon** on any video card in the detail screen to save it
 - The icon turns **teal** when bookmarked and **grey** when not
