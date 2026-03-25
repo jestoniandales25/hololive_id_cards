@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
-import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_event.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
-import 'package:provider/provider.dart';
 import '../../data/models/video_model.dart';
+import 'package:hololive_id_cards/ui/widgets/skeleton_loading.dart';
 
 class HololiveDetailScreen extends StatelessWidget {
   const HololiveDetailScreen({super.key});
@@ -14,25 +18,37 @@ class HololiveDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
-      body: Column(
-        children: [
-          // ── TOP HALF: Member Info (fixed) ────────
-          _MemberInfoPanel(member: member),
+      body: DefaultTabController(
+        length: 2,
+        child: Column(
+          children: [
+            // ── TOP HALF: Member Info (fixed) ────────
+            _MemberInfoPanel(member: member),
 
-          // ── DIVIDER ──────────────────────────────
-          Container(
-            height: 4,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF00ADB5), Color(0xFF1A1A2E)],
+            // ── TAB BAR ──────────────────────────────
+            const TabBar(
+              indicatorColor: Color(0xFF00ADB5),
+              labelColor: Color(0xFF00ADB5),
+              unselectedLabelColor: Colors.white54,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              tabs: [
+                Tab(text: 'Streams'),
+                Tab(text: 'Songs'),
+              ],
+            ),
+
+            // ── BOTTOM HALF: Tab Views (scrollable) ─────
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _VideosPanel(member: member),
+                  _SongsPanel(member: member),
+                ],
               ),
             ),
-          ),
-
-          // ── BOTTOM HALF: Videos (scrollable) ─────
-          // ✅ pass member so VideoCard knows which channelId to use
-          Expanded(child: _VideosPanel(member: member)),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -194,14 +210,14 @@ class _MemberInfoPanel extends StatelessWidget {
 
 // ── BOTTOM PANEL ───────────────────────────────────────
 class _VideosPanel extends StatelessWidget {
-  final MemberModel member;   // ✅ added
+  final MemberModel member; // ✅ added
 
-  const _VideosPanel({required this.member});  // ✅ added
+  const _VideosPanel({required this.member}); // ✅ added
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HololiveBlocProvider>(
-      builder: (context, bloc, _) {
+    return BlocBuilder<HololiveBloc, HololiveState>(
+      builder: (context, state) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -228,30 +244,91 @@ class _VideosPanel extends StatelessWidget {
             ),
 
             Expanded(
-              child: bloc.isLoadingVideos
+              child: state.videosStatus == HololiveStatus.loading || state.videosStatus == HololiveStatus.idle
+                  ? const SkeletonVideoList()
+                  : state.videos.isEmpty
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF00ADB5),
+                      child: Text(
+                        'No videos found.',
+                        style: TextStyle(color: Colors.white38),
                       ),
                     )
-                  : bloc.videos.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No videos found.',
-                            style: TextStyle(color: Colors.white38),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          itemCount: bloc.videos.length,
-                          itemBuilder: (_, index) => _VideoCard(
-                            video: bloc.videos[index],
-                            member: member,    // ✅ pass member to card
-                          ),
-                        ),
+                  : ListView.builder(
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        4,
+                        12,
+                        MediaQuery.of(context).padding.bottom + 20,
+                      ),
+                      itemCount: state.videos.length,
+                      itemBuilder: (_, index) => _VideoCard(
+                        video: state.videos[index],
+                        member: member, // ✅ pass member to card
+                      ),
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _SongsPanel extends StatelessWidget {
+  final MemberModel member;
+
+  const _SongsPanel({required this.member});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HololiveBloc, HololiveState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.music_note_rounded,
+                    color: Color(0xFF00ADB5),
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Recent Songs',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            Expanded(
+              child: state.songsStatus == HololiveStatus.loading || state.songsStatus == HololiveStatus.idle
+                  ? const SkeletonVideoList()
+                  : state.songs.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No songs found.',
+                        style: TextStyle(color: Colors.white38),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        4,
+                        12,
+                        MediaQuery.of(context).padding.bottom + 20,
+                      ),
+                      itemCount: state.songs.length,
+                      itemBuilder: (_, index) =>
+                          _VideoCard(video: state.songs[index], member: member),
+                    ),
             ),
           ],
         );
@@ -263,21 +340,18 @@ class _VideosPanel extends StatelessWidget {
 // ── VIDEO CARD ─────────────────────────────────────────
 class _VideoCard extends StatelessWidget {
   final VideoModel video;
-  final MemberModel member;   // ✅ added
+  final MemberModel member; // ✅ added
 
   const _VideoCard({
     required this.video,
-    required this.member,     // ✅ added
+    required this.member, // ✅ added
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/video-player',
-        arguments: video,
-      ),
+      onTap: () =>
+          Navigator.pushNamed(context, '/video-player', arguments: video),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
@@ -398,15 +472,13 @@ class _VideoCard extends StatelessWidget {
                         const Spacer(),
 
                         // ✅ Bookmark icon toggle
-                        Consumer<BookmarkBlocProvider>(
-                          builder: (context, bookmarkBloc, _) {
-                            final isBookmarked =
-                                bookmarkBloc.isBookmarked(video.id);
+                        BlocBuilder<BookmarkBloc, BookmarkState>(
+                          builder: (context, state) {
+                            final isBookmarked = state.isBookmarked(
+                              video.id,
+                            );
                             return GestureDetector(
-                              onTap: () => bookmarkBloc.toggleBookmark(
-                                member.id,  // ✅ saves under this member
-                                video,
-                              ),
+                              onTap: () => context.read<BookmarkBloc>().add(ToggleBookmarkEvent(member.id, video)),
                               child: Icon(
                                 isBookmarked
                                     ? Icons.bookmark_rounded

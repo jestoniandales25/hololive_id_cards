@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_event.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/video_model.dart';
 
@@ -61,9 +63,9 @@ class BookmarkScreen extends StatelessWidget {
 
             // ── Bookmarks List ───────────────────────
             Expanded(
-              child: Consumer<BookmarkBlocProvider>(
-                builder: (context, bloc, _) {
-                  final bookmarks = bloc.allBookmarks;
+              child: BlocBuilder<BookmarkBloc, BookmarkState>(
+                builder: (context, state) {
+                  final bookmarks = state.allBookmarks;
 
                   if (bookmarks.isEmpty) {
                     return const Center(
@@ -244,10 +246,10 @@ class _BookmarkCard extends StatelessWidget {
                       GestureDetector(
                         onTap: () {
                           // Find which channel this video belongs to
-                          final bloc = context.read<BookmarkBlocProvider>();
-                          for (final entry in bloc.bookmarks.entries) {
+                          final bloc = context.read<BookmarkBloc>();
+                          for (final entry in bloc.state.bookmarks.entries) {
                             if (entry.value.any((v) => v.id == video.id)) {
-                              bloc.toggleBookmark(entry.key, video);
+                              bloc.add(ToggleBookmarkEvent(entry.key, video));
                               break;
                             }
                           }

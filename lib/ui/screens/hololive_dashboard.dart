@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
-import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
-import 'package:provider/provider.dart';
+import 'package:hololive_id_cards/ui/widgets/skeleton_loading.dart';
 
 class HololiveDashboard extends StatelessWidget {
   const HololiveDashboard({super.key});
@@ -29,9 +33,7 @@ class HololiveDashboard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       decoration: const BoxDecoration(
         color: Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.vertical(
-          bottom: Radius.circular(24),
-        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Colors.black45,
@@ -55,15 +57,12 @@ class HololiveDashboard extends StatelessWidget {
                   letterSpacing: 2,
                 ),
               ),
-              Consumer<HololiveBlocProvider>(
-                builder: (_, bloc, _) => Text(
-                  bloc.isLoading
+              BlocBuilder<HololiveBloc, HololiveState>(
+                builder: (context, state) => Text(
+                  state.membersStatus == HololiveStatus.loading
                       ? 'Loading...'
-                      : '${bloc.members.length} talents',
-                  style: const TextStyle(
-                    color: Colors.white38,
-                    fontSize: 13,
-                  ),
+                      : '${state.members.length} talents',
+                  style: const TextStyle(color: Colors.white38, fontSize: 13),
                 ),
               ),
             ],
@@ -71,8 +70,8 @@ class HololiveDashboard extends StatelessWidget {
           Row(
             children: [
               // Bookmark button
-              Consumer<BookmarkBlocProvider>(
-                builder: (_, bloc, _) => GestureDetector(
+              BlocBuilder<BookmarkBloc, BookmarkState>(
+                builder: (context, state) => GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/bookmarks'),
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -90,7 +89,7 @@ class HololiveDashboard extends StatelessWidget {
                           color: Color(0xFF00ADB5),
                           size: 20,
                         ),
-                        if (bloc.allBookmarks.isNotEmpty)
+                        if (state.allBookmarks.isNotEmpty)
                           Positioned(
                             right: 0,
                             top: 0,
@@ -110,9 +109,9 @@ class HololiveDashboard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // Refresh button
-              Consumer<HololiveBlocProvider>(
-                builder: (_, bloc, _) => GestureDetector(
-                  onTap: bloc.refresh,
+              BlocBuilder<HololiveBloc, HololiveState>(
+                builder: (context, state) => GestureDetector(
+                  onTap: () => context.read<HololiveBloc>().add(RefreshEvent()),
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
@@ -139,30 +138,35 @@ class HololiveDashboard extends StatelessWidget {
 
   // ── Body ────────────────────────────────────────────
   Widget _buildBody() {
-    return Consumer<HololiveBlocProvider>(
-      builder: (context, bloc, _) {
+    return BlocBuilder<HololiveBloc, HololiveState>(
+      builder: (context, state) {
         // ✅ Skeleton loading
-        if (bloc.isLoading) {
-          return const _SkeletonGrid();
+        if (state.membersStatus == HololiveStatus.loading ||
+            state.membersStatus == HololiveStatus.idle) {
+          return const SkeletonMemberGrid();
         }
 
         // Error
-        if (bloc.state == BlocState.error) {
+        if (state.membersStatus == HololiveStatus.error) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.error_outline,
-                    color: Colors.redAccent, size: 48),
+                const Icon(
+                  Icons.error_outline,
+                  color: Colors.redAccent,
+                  size: 48,
+                ),
                 const SizedBox(height: 12),
                 Text(
-                  bloc.error ?? 'Something went wrong',
+                  state.membersError ?? 'Something went wrong',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: bloc.refresh,
+                  onPressed: () =>
+                      context.read<HololiveBloc>().add(RefreshEvent()),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(
@@ -175,7 +179,7 @@ class HololiveDashboard extends StatelessWidget {
         }
 
         // Empty
-        if (bloc.members.isEmpty) {
+        if (state.members.isEmpty) {
           return const Center(
             child: Text(
               'No members found.',
@@ -193,170 +197,8 @@ class HololiveDashboard extends StatelessWidget {
             mainAxisSpacing: 12,
             childAspectRatio: 0.62,
           ),
-          itemCount: bloc.members.length,
-          itemBuilder: (_, index) =>
-              _MemberCard(member: bloc.members[index]),
-        );
-      },
-    );
-  }
-}
-
-// ── Skeleton Grid ───────────────────────────────────────
-class _SkeletonGrid extends StatelessWidget {
-  const _SkeletonGrid();
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      physics: const NeverScrollableScrollPhysics(), // ✅ no scroll during loading
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 0.62,
-      ),
-      itemCount: 10,  // show 10 skeleton cards
-      itemBuilder: (_, _) => const _SkeletonCard(),
-    );
-  }
-}
-
-// ── Skeleton Card ───────────────────────────────────────
-class _SkeletonCard extends StatefulWidget {
-  const _SkeletonCard();
-
-  @override
-  State<_SkeletonCard> createState() => _SkeletonCardState();
-}
-
-class _SkeletonCardState extends State<_SkeletonCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    // ✅ Shimmer pulse animation
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..repeat(reverse: true);
-
-    _animation = Tween<double>(begin: 0.3, end: 0.7).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (_, _) {
-        final shimmerColor =
-            Colors.white.withOpacity(_animation.value);
-
-        return Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A2E),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFF00ADB5).withOpacity(0.1),
-            ),
-          ),
-          child: Column(
-            children: [
-              // ── Image placeholder ──────────────────
-              Expanded(
-                flex: 5,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: shimmerColor.withOpacity(_animation.value * 0.3),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.person_rounded,
-                      color: Colors.white.withOpacity(0.05),
-                      size: 48,
-                    ),
-                  ),
-                ),
-              ),
-
-              // ── Text placeholders ──────────────────
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Name placeholder
-                      Container(
-                        height: 12,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
-                              _animation.value * 0.3),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-
-                      // JP name placeholder
-                      Container(
-                        height: 10,
-                        width: 80,
-                        decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
-                              _animation.value * 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Subs placeholder
-                      Row(
-                        children: [
-                          Container(
-                            height: 10,
-                            width: 10,
-                            decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
-                                  _animation.value * 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Container(
-                            height: 10,
-                            width: 60,
-                            decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
-                                  _animation.value * 0.2),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          itemCount: state.members.length,
+          itemBuilder: (_, index) => _MemberCard(member: state.members[index]),
         );
       },
     );
@@ -373,12 +215,10 @@ class _MemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.read<HololiveBlocProvider>().loadVideos(member.id);
-        Navigator.pushNamed(
-          context,
-          '/member-detail',
-          arguments: member,
-        );
+        final bloc = context.read<HololiveBloc>();
+        bloc.add(FetchVideosEvent(member.id));
+        bloc.add(FetchSongsEvent(member.id));
+        Navigator.pushNamed(context, '/member-detail', arguments: member);
       },
       child: Container(
         decoration: BoxDecoration(
@@ -463,13 +303,14 @@ class _MemberCard extends StatelessWidget {
                       left: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 3),
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withOpacity(0.65),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color:
-                                const Color(0xFF00ADB5).withOpacity(0.6),
+                            color: const Color(0xFF00ADB5).withOpacity(0.6),
                           ),
                         ),
                         child: Text(
