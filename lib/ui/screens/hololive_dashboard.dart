@@ -56,7 +56,7 @@ class HololiveDashboard extends StatelessWidget {
                 ),
               ),
               Consumer<HololiveBlocProvider>(
-                builder: (_, bloc, __) => Text(
+                builder: (_, bloc, _) => Text(
                   bloc.isLoading
                       ? 'Loading...'
                       : '${bloc.members.length} talents',
@@ -72,7 +72,7 @@ class HololiveDashboard extends StatelessWidget {
             children: [
               // Bookmark button
               Consumer<BookmarkBlocProvider>(
-                builder: (_, bloc, __) => GestureDetector(
+                builder: (_, bloc, _) => GestureDetector(
                   onTap: () => Navigator.pushNamed(context, '/bookmarks'),
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -111,7 +111,7 @@ class HololiveDashboard extends StatelessWidget {
               const SizedBox(width: 8),
               // Refresh button
               Consumer<HololiveBlocProvider>(
-                builder: (_, bloc, __) => GestureDetector(
+                builder: (_, bloc, _) => GestureDetector(
                   onTap: bloc.refresh,
                   child: Container(
                     padding: const EdgeInsets.all(10),
@@ -218,7 +218,7 @@ class _SkeletonGrid extends StatelessWidget {
         childAspectRatio: 0.62,
       ),
       itemCount: 10,  // show 10 skeleton cards
-      itemBuilder: (_, __) => const _SkeletonCard(),
+      itemBuilder: (_, _) => const _SkeletonCard(),
     );
   }
 }
@@ -260,7 +260,7 @@ class _SkeletonCardState extends State<_SkeletonCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (_, _) {
         final shimmerColor =
             Colors.white.withOpacity(_animation.value);
 
@@ -416,7 +416,7 @@ class _MemberCard extends StatelessWidget {
                     child: Image.network(
                       member.avatarUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         color: const Color(0xFF0D0D0D),
                         child: Center(
                           child: Text(

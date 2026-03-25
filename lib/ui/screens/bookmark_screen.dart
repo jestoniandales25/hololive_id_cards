@@ -143,7 +143,7 @@ class _BookmarkCard extends StatelessWidget {
                   width: 120,
                   height: 72,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (_, _, _) => Container(
                     width: 120,
                     height: 72,
                     color: const Color(0xFF0D0D0D),

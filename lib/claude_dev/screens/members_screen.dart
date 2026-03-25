@@ -21,7 +21,7 @@ class MembersScreen extends StatelessWidget {
         ),
         actions: [
           Consumer<HololiveBloc>(
-            builder: (_, bloc, __) => IconButton(
+            builder: (_, bloc, _) => IconButton(
               icon: const Icon(Icons.refresh, color: Color(0xFF00ADB5)),
               onPressed: bloc.retry,
             ),
@@ -73,7 +73,7 @@ class MembersScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(12),
             itemCount: bloc.members.length,
-            separatorBuilder: (_, __) =>
+            separatorBuilder: (_, _) =>
                 const Divider(color: Color(0xFF1A1A2E), height: 1),
             itemBuilder: (_, index) =>
                 _MemberTile(member: bloc.members[index]),
@@ -104,7 +104,7 @@ class _MemberTile extends StatelessWidget {
             width: 56,
             height: 56,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Center(
+            errorBuilder: (_, _, _) => Center(
               child: Text(
                 member.displayName.isNotEmpty
                     ? member.displayName[0].toUpperCase()
