@@ -8,8 +8,23 @@ import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:hololive_id_cards/ui/widgets/skeleton_loading.dart';
 
-class HololiveDashboard extends StatelessWidget {
+class HololiveDashboard extends StatefulWidget {
   const HololiveDashboard({super.key});
+
+  @override
+  State<HololiveDashboard> createState() => _HololiveDashboardState();
+}
+
+class _HololiveDashboardState extends State<HololiveDashboard> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  bool _isSearching = false;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,97 +57,166 @@ class HololiveDashboard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'hololive',
-                style: TextStyle(
-                  color: Color(0xFF00ADB5),
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-              BlocBuilder<HololiveBloc, HololiveState>(
-                builder: (context, state) => Text(
-                  state.membersStatus == HololiveStatus.loading
-                      ? 'Loading...'
-                      : '${state.members.length} talents',
-                  style: const TextStyle(color: Colors.white38, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              // Bookmark button
-              BlocBuilder<BookmarkBloc, BookmarkState>(
-                builder: (context, state) => GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/bookmarks'),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00ADB5).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFF00ADB5).withOpacity(0.4),
+      child: _isSearching
+          ? Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    autofocus: true,
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Search members...',
+                      hintStyle: const TextStyle(color: Colors.white38),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFF00ADB5),
                       ),
-                    ),
-                    child: Stack(
-                      children: [
-                        const Icon(
-                          Icons.bookmark_rounded,
-                          color: Color(0xFF00ADB5),
-                          size: 20,
-                        ),
-                        if (state.allBookmarks.isNotEmpty)
-                          Positioned(
-                            right: 0,
-                            top: 0,
-                            child: Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Colors.redAccent,
-                                shape: BoxShape.circle,
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(
+                                Icons.clear,
+                                color: Colors.white54,
                               ),
-                            ),
-                          ),
-                      ],
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {
+                                  _searchQuery = '';
+                                });
+                              },
+                            )
+                          : null,
+                      filled: true,
+                      fillColor: const Color(0xFF0D0D0D),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              // Refresh button
-              BlocBuilder<HololiveBloc, HololiveState>(
-                builder: (context, state) => GestureDetector(
-                  onTap: () => context.read<HololiveBloc>().add(RefreshEvent()),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isSearching = false;
+                      _searchQuery = '';
+                      _searchController.clear();
+                    });
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00ADB5).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: const Color(0xFF00ADB5).withOpacity(0.4),
-                      ),
+                      color: Colors.white.withOpacity(0.05),
+                      shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.refresh_rounded,
-                      color: Color(0xFF00ADB5),
+                      Icons.close_rounded,
+                      color: Colors.white54,
                       size: 20,
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
+              ],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'hololive',
+                      style: TextStyle(
+                        color: Color(0xFF00ADB5),
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    BlocBuilder<HololiveBloc, HololiveState>(
+                      builder: (context, state) => Text(
+                        state.membersStatus == HololiveStatus.loading
+                            ? 'Loading...'
+                            : '${state.members.length} talents',
+                        style: const TextStyle(
+                          color: Colors.white38,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    // Bookmark button
+                    BlocBuilder<BookmarkBloc, BookmarkState>(
+                      builder: (context, state) => GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, '/bookmarks'),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00ADB5).withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFF00ADB5).withOpacity(0.4),
+                            ),
+                          ),
+                          child: Stack(
+                            children: [
+                              const Icon(
+                                Icons.bookmark_rounded,
+                                color: Color(0xFF00ADB5),
+                                size: 20,
+                              ),
+                              if (state.allBookmarks.isNotEmpty)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.redAccent,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Search button
+                    GestureDetector(
+                      onTap: () => setState(() => _isSearching = true),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00ADB5).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFF00ADB5).withOpacity(0.4),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFF00ADB5),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
     );
   }
 
@@ -180,25 +264,85 @@ class HololiveDashboard extends StatelessWidget {
 
         // Empty
         if (state.members.isEmpty) {
-          return const Center(
-            child: Text(
-              'No members found.',
-              style: TextStyle(color: Colors.white54),
+          return RefreshIndicator(
+            color: const Color(0xFF00ADB5),
+            backgroundColor: const Color(0xFF1A1A2E),
+            onRefresh: () async {
+              context.read<HololiveBloc>().add(RefreshEvent());
+              await Future.delayed(const Duration(seconds: 1));
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                const Center(
+                  child: Text(
+                    'No members found.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Filter based on query
+        final filteredMembers = state.members.where((member) {
+          final query = _searchQuery.toLowerCase();
+          final hasDisplayName = member.displayName.toLowerCase().contains(
+            query,
+          );
+          final hasName = member.name.toLowerCase().contains(query);
+          final hasEnglishName = (member.englishName ?? '')
+              .toLowerCase()
+              .contains(query);
+          return hasDisplayName || hasName || hasEnglishName;
+        }).toList();
+
+        if (filteredMembers.isEmpty) {
+          return RefreshIndicator(
+            color: const Color(0xFF00ADB5),
+            backgroundColor: const Color(0xFF1A1A2E),
+            onRefresh: () async {
+              context.read<HololiveBloc>().add(RefreshEvent());
+              await Future.delayed(const Duration(seconds: 1));
+            },
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+                const Center(
+                  child: Text(
+                    'No matching members found.',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                ),
+              ],
             ),
           );
         }
 
         // ✅ Real card grid
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.62,
+        return RefreshIndicator(
+          color: const Color(0xFF00ADB5),
+          backgroundColor: const Color(0xFF1A1A2E),
+          onRefresh: () async {
+            context.read<HololiveBloc>().add(RefreshEvent());
+            await Future.delayed(const Duration(seconds: 1));
+          },
+          child: GridView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.62,
+            ),
+            itemCount: filteredMembers.length,
+            itemBuilder: (_, index) =>
+                _MemberCard(member: filteredMembers[index]),
           ),
-          itemCount: state.members.length,
-          itemBuilder: (_, index) => _MemberCard(member: state.members[index]),
         );
       },
     );
