@@ -20,11 +20,7 @@ class HololiveRepository {
     );
 
     _dio.interceptors.add(
-      LogInterceptor(
-        request: true,
-        responseBody: false,
-        error: true,
-      ),
+      LogInterceptor(request: true, responseBody: false, error: true),
     );
   }
 
@@ -54,7 +50,7 @@ class HololiveRepository {
       final response = await _dio.get(
         '/channels/$channelId/videos',
         queryParameters: {
-          'limit': 20,
+          'limit': 100, // increased to fetch more videos
           'status': 'past',
           'type': 'stream',
           'order': 'latest',
@@ -74,6 +70,44 @@ class HololiveRepository {
     }
   }
 
+  Future<List<VideoModel>> fetchChannelSongs(String channelId) async {
+    try {
+      final response = await _dio.get(
+        '/channels/$channelId/videos',
+        queryParameters: {
+          'limit': 100, // increased to fetch more base videos to filter for songs
+          'status': 'past',
+          'type': 'stream,clip', // getting both streams and clips to maximize chance of finding songs
+          'order': 'latest',
+        },
+      );
+
+      final List<dynamic> items = response.data is List
+          ? response.data
+          : (response.data['items'] ?? []);
+
+      final validTopics = [
+        'music',
+        'singing',
+        'music_cover',
+        'music_original',
+        'original_song',
+        'cover'
+      ];
+
+      final filteredItems = items.where((json) {
+        final topic = (json as Map<String, dynamic>)['topic_id'] as String?;
+        return topic != null && validTopics.contains(topic.toLowerCase());
+      }).toList();
+
+      return filteredItems
+          .map((json) => VideoModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   // ── Error Handler ─────────────────────────────
   Exception _handleError(DioException e) {
     switch (e.type) {
@@ -85,7 +119,8 @@ class HololiveRepository {
         final status = e.response?.statusCode;
         if (status == 401) return Exception('Invalid API key.');
         if (status == 403) return Exception('Access denied.');
-        if (status == 429) return Exception('Rate limit exceeded. Try again later.');
+        if (status == 429)
+          return Exception('Rate limit exceeded. Try again later.');
         return Exception('Server error: $status');
       case DioExceptionType.connectionError:
         return Exception('No internet connection.');
