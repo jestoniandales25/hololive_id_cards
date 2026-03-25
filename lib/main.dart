@@ -1,24 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:hololive_id_cards/blocs/bookmark_bloc_provider.dart';
-import 'package:hololive_id_cards/blocs/hololive_bloc_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
+import 'package:hololive_id_cards/blocs/bookmark/bookmark_event.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
 import 'package:hololive_id_cards/data/models/video_model.dart';
 import 'package:hololive_id_cards/data/repositories/hololive_repository.dart';
 import 'package:hololive_id_cards/ui/screens/bookmark_screen.dart';
 import 'package:hololive_id_cards/ui/screens/hololive_dashboard.dart';
 import 'package:hololive_id_cards/ui/screens/member_detail_screen.dart';
 import 'package:hololive_id_cards/ui/screens/video_player_screen.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   runApp(
-    MultiProvider(
+    MultiBlocProvider(
       providers: [
-        ChangeNotifierProvider(
+        BlocProvider(
           create: (_) =>
-              HololiveBlocProvider(HololiveRepository())..loadMembers(),
+              HololiveBloc(HololiveRepository())..add(FetchMembersEvent()),
         ),
-        ChangeNotifierProvider(
-          create: (_) => BookmarkBlocProvider()..loadBookmarks(),
+        BlocProvider(
+          create: (_) => BookmarkBloc()..add(LoadBookmarksEvent()),
         ),
       ],
       child: const MyApp(),
