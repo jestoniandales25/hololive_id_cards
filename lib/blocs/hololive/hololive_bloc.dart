@@ -11,6 +11,7 @@ class HololiveBloc extends Bloc<HololiveEvent, HololiveState> {
     on<FetchMembersEvent>(_onFetchMembers);
     on<FetchVideosEvent>(_onFetchVideos);
     on<FetchSongsEvent>(_onFetchSongs);
+    on<FetchItunesSongsEvent>(_onFetchItunesSongs);
     on<RefreshEvent>(_onRefresh);
   }
 
@@ -44,6 +45,17 @@ class HololiveBloc extends Bloc<HololiveEvent, HololiveState> {
       emit(state.copyWith(songsStatus: HololiveStatus.success, songs: songs));
     } catch (e) {
       emit(state.copyWith(songsStatus: HololiveStatus.error, songsError: e.toString()));
+    }
+  }
+
+  Future<void> _onFetchItunesSongs(FetchItunesSongsEvent event, Emitter<HololiveState> emit) async {
+    emit(state.copyWith(itunesSongsStatus: HololiveStatus.loading, itunesSongs: []));
+
+    try {
+      final songs = await _repo.fetchItunesSongs(event.memberName);
+      emit(state.copyWith(itunesSongsStatus: HololiveStatus.success, itunesSongs: songs));
+    } catch (e) {
+      emit(state.copyWith(itunesSongsStatus: HololiveStatus.error, itunesSongsError: e.toString()));
     }
   }
 

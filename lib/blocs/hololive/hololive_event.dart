@@ -27,4 +27,13 @@ class FetchSongsEvent extends HololiveEvent {
   List<Object> get props => [channelId];
 }
 
+class FetchItunesSongsEvent extends HololiveEvent {
+  final String memberName;
+
+  const FetchItunesSongsEvent(this.memberName);
+
+  @override
+  List<Object> get props => [memberName];
+}
+
 class RefreshEvent extends HololiveEvent {}

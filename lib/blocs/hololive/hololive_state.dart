@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
+import 'package:hololive_id_cards/data/models/song_model.dart';
 import 'package:hololive_id_cards/data/models/video_model.dart';
 
 enum HololiveStatus { idle, loading, success, error }
@@ -17,6 +18,10 @@ class HololiveState extends Equatable {
   final String? songsError;
   final List<VideoModel> songs;
 
+  final HololiveStatus itunesSongsStatus;
+  final String? itunesSongsError;
+  final List<SongModel> itunesSongs;
+
   const HololiveState({
     this.membersStatus = HololiveStatus.idle,
     this.membersError,
@@ -27,6 +32,9 @@ class HololiveState extends Equatable {
     this.songsStatus = HololiveStatus.idle,
     this.songsError,
     this.songs = const [],
+    this.itunesSongsStatus = HololiveStatus.idle,
+    this.itunesSongsError,
+    this.itunesSongs = const [],
   });
 
   HololiveState copyWith({
@@ -39,6 +47,9 @@ class HololiveState extends Equatable {
     HololiveStatus? songsStatus,
     String? songsError,
     List<VideoModel>? songs,
+    HololiveStatus? itunesSongsStatus,
+    String? itunesSongsError,
+    List<SongModel>? itunesSongs,
   }) {
     return HololiveState(
       membersStatus: membersStatus ?? this.membersStatus,
@@ -50,6 +61,9 @@ class HololiveState extends Equatable {
       songsStatus: songsStatus ?? this.songsStatus,
       songsError: songsError ?? this.songsError,
       songs: songs ?? this.songs,
+      itunesSongsStatus: itunesSongsStatus ?? this.itunesSongsStatus,
+      itunesSongsError: itunesSongsError ?? this.itunesSongsError,
+      itunesSongs: itunesSongs ?? this.itunesSongs,
     );
   }
 
@@ -64,5 +78,8 @@ class HololiveState extends Equatable {
         songsStatus,
         songsError,
         songs,
+        itunesSongsStatus,
+        itunesSongsError,
+        itunesSongs,
       ];
 }
