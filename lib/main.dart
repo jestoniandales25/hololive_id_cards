@@ -4,11 +4,14 @@ import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
 import 'package:hololive_id_cards/blocs/bookmark/bookmark_event.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
+import 'package:hololive_id_cards/data/models/song_model.dart';
 import 'package:hololive_id_cards/data/models/video_model.dart';
 import 'package:hololive_id_cards/data/repositories/hololive_repository.dart';
 import 'package:hololive_id_cards/ui/screens/bookmark_screen.dart';
 import 'package:hololive_id_cards/ui/screens/hololive_dashboard.dart';
 import 'package:hololive_id_cards/ui/screens/member_detail_screen.dart';
+import 'package:hololive_id_cards/ui/screens/member_songs_screen.dart';
+import 'package:hololive_id_cards/ui/screens/song_player_screen.dart';
 import 'package:hololive_id_cards/ui/screens/video_player_screen.dart';
 
 void main() {
@@ -44,6 +47,10 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const HololiveDashboard(),
         '/member-detail': (context) => const HololiveDetailScreen(),
+        '/member-songs': (context) => const MemberSongsScreen(),
+        '/song-player': (context) => SongPlayerScreen(
+          song: ModalRoute.of(context)!.settings.arguments as SongModel,
+        ),
         '/video-player': (context) => VideoPlayerScreen(
           video: ModalRoute.of(context)!.settings.arguments as VideoModel,
         ),

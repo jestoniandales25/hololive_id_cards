@@ -4,6 +4,7 @@ import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
 import 'package:hololive_id_cards/blocs/bookmark/bookmark_event.dart';
 import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
+import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import '../../data/models/video_model.dart';
@@ -18,37 +19,14 @@ class HololiveDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
-      body: DefaultTabController(
-        length: 2,
-        child: Column(
-          children: [
-            // ── TOP HALF: Member Info (fixed) ────────
-            _MemberInfoPanel(member: member),
+      body: Column(
+        children: [
+          // ── TOP HALF: Member Info (fixed) ────────
+          _MemberInfoPanel(member: member),
 
-            // ── TAB BAR ──────────────────────────────
-            const TabBar(
-              indicatorColor: Color(0xFF00ADB5),
-              labelColor: Color(0xFF00ADB5),
-              unselectedLabelColor: Colors.white54,
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              tabs: [
-                Tab(text: 'Streams'),
-                Tab(text: 'Songs'),
-              ],
-            ),
-
-            // ── BOTTOM HALF: Tab Views (scrollable) ─────
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _VideosPanel(member: member),
-                  _SongsPanel(member: member),
-                ],
-              ),
-            ),
-          ],
-        ),
+          // ── BOTTOM: Streams Panel (scrollable) ─────
+          Expanded(child: _VideosPanel(member: member)),
+        ],
       ),
     );
   }
@@ -178,6 +156,69 @@ class _MemberInfoPanel extends StatelessWidget {
             ),
           ),
 
+          // Songs button row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: GestureDetector(
+              onTap: () {
+                final searchName = member.englishName ?? member.displayName;
+                context.read<HololiveBloc>().add(
+                  FetchItunesSongsEvent(searchName),
+                );
+                Navigator.pushNamed(
+                  context,
+                  '/member-songs',
+                  arguments: member,
+                );
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00ADB5), Color(0xFF007A85)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00ADB5).withOpacity(0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.music_note_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'View Songs & Music',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Spacer(),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
           // Stats row
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -274,68 +315,7 @@ class _VideosPanel extends StatelessWidget {
   }
 }
 
-class _SongsPanel extends StatelessWidget {
-  final MemberModel member;
 
-  const _SongsPanel({required this.member});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<HololiveBloc, HololiveState>(
-      builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.music_note_rounded,
-                    color: Color(0xFF00ADB5),
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'Recent Songs',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: state.songsStatus == HololiveStatus.loading || state.songsStatus == HololiveStatus.idle
-                  ? const SkeletonVideoList()
-                  : state.songs.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No songs found.',
-                        style: TextStyle(color: Colors.white38),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: EdgeInsets.fromLTRB(
-                        12,
-                        4,
-                        12,
-                        MediaQuery.of(context).padding.bottom + 20,
-                      ),
-                      itemCount: state.songs.length,
-                      itemBuilder: (_, index) =>
-                          _VideoCard(video: state.songs[index], member: member),
-                    ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
 
 // ── VIDEO CARD ─────────────────────────────────────────
 class _VideoCard extends StatelessWidget {
