@@ -12,10 +12,11 @@ to the **flutter_bloc** state management library.
 - **Profile Picture Backgrounds** — Each card features the member's official Hololive profile picture
 - **Member Video Page** — Tap any card to navigate to a detail screen showing recent streams
 - **In-App Video Player** — Watch videos inside the app using `youtube_player_iframe`
-- **Watch Live** — See if a member is currently live with a pulsing indicator and watch instantly
-- **Auto-Refresh Live Status** — Live streams auto-update every 30 seconds while viewing a member
+- **Live & Upcoming Streams** — The Streams and Songs tabs now include currently live and upcoming streams alongside past videos, with a red `LIVE` badge shown on active streams
 - **Bookmark System** — Save your favorite videos per member; view all bookmarks in a dedicated screen
 - **Persistent Bookmarks** — Bookmarks survive app restarts using `shared_preferences`
+- **Member Search** — Tap the 🔍 icon in the header to slide in a search bar; the title and talent count animate out while you type to filter members by name in real time
+- **Pull-to-Refresh** — Swipe down on the member grid to refresh the list, just like in mobile social apps
 - **Secured API Key** — API key is encrypted at build time using `envied` with `obfuscate: true`
 - **Immutable Models** — Data models generated with `freezed` for type-safe, boilerplate-free code
 - **Dio HTTP Client** — Network requests powered by `dio` with interceptors, timeouts, and typed error handling
@@ -60,7 +61,7 @@ lib/
 └── ui/
     └── screens/                        # App screens
         ├── splash_screen.dart
-        ├── hololive_dashboard.dart     # Member grid + bookmark nav
+        ├── hololive_dashboard.dart     # Member grid + search + pull-to-refresh + bookmark nav
         ├── member_detail_screen.dart   # Stream & Song tabs + Video list + Bookmark toggle
         ├── video_player_screen.dart    # In-app YouTube player
         └── bookmark_screen.dart       # All saved bookmarks
@@ -135,28 +136,15 @@ dev_dependencies:
 ```
 
 ---
-## How Live Streams Work
+## How Live & Upcoming Streams Work
 
-Live stream detection dynamically updates the UI based on YouTube data:
+The Holodex API is queried with `status: 'live,upcoming,past'` for both the Streams and Songs tabs in the member detail screen. The response includes:
 
-- Entering a member's detail screen **automatically starts polling** the Holodex `/live` endpoint
-- If the member is **currently live**, a pulsing 🔴 indicator appears above the recent streams list
-- Tap **Watch Live** to open the stream instantly in the in-app YouTube player
-- Live status **auto-refreshes every 30 seconds** silently in the background
-- Leaving the detail screen **stops the timer** immediately — no memory leaks
-```
-Enter detail screen
-    │
-    ▼
-startLivePolling(channelId)
-    ├── fetch immediately     ← first check
-    └── Timer every 30s ──────── silent refresh
-              │
-    Leave detail screen
-    │
-    ▼
-stopLivePolling()             ← timer cancelled ✅
-```
+- **Live streams** — displayed with a red `LIVE` badge on the video card thumbnail
+- **Upcoming streams** — the Watch label changes to `Upcoming` on the card
+- **Past streams** — shown as normal videos with their duration
+
+No manual polling is required — results are always fresh when a member's detail page is opened.
 
 ---
 ## How Bookmarks Work
