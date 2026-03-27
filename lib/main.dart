@@ -13,6 +13,8 @@ import 'package:hololive_id_cards/ui/screens/member_detail_screen.dart';
 import 'package:hololive_id_cards/ui/screens/member_songs_screen.dart';
 import 'package:hololive_id_cards/ui/screens/song_player_screen.dart';
 import 'package:hololive_id_cards/ui/screens/video_player_screen.dart';
+import 'package:hololive_id_cards/ui/widgets/live_stream_listener.dart';
+import 'package:toastification/toastification.dart';
 
 void main() {
   runApp(
@@ -36,26 +38,31 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hololive Members',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF0D0D0D),
-        colorScheme: const ColorScheme.dark(primary: Color(0xFF00ADB5)),
+    return ToastificationWrapper(
+      child: MaterialApp(
+        title: 'Hololive Members',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: const Color(0xFF0D0D0D),
+          colorScheme: const ColorScheme.dark(primary: Color(0xFF00ADB5)),
+        ),
+        builder: (context, child) {
+          return LiveStreamListener(child: child!);
+        },
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const HololiveDashboard(),
+          '/member-detail': (context) => const HololiveDetailScreen(),
+          '/member-songs': (context) => const MemberSongsScreen(),
+          '/song-player': (context) => SongPlayerScreen(
+            song: ModalRoute.of(context)!.settings.arguments as SongModel,
+          ),
+          '/video-player': (context) => VideoPlayerScreen(
+            video: ModalRoute.of(context)!.settings.arguments as VideoModel,
+          ),
+          '/bookmarks': (context) => const BookmarkScreen(),
+        },
       ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const HololiveDashboard(),
-        '/member-detail': (context) => const HololiveDetailScreen(),
-        '/member-songs': (context) => const MemberSongsScreen(),
-        '/song-player': (context) => SongPlayerScreen(
-          song: ModalRoute.of(context)!.settings.arguments as SongModel,
-        ),
-        '/video-player': (context) => VideoPlayerScreen(
-          video: ModalRoute.of(context)!.settings.arguments as VideoModel,
-        ),
-        '/bookmarks': (context) => const BookmarkScreen(),
-      },
     );
   }
 }
