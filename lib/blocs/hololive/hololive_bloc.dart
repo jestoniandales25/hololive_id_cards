@@ -13,6 +13,7 @@ class HololiveBloc extends Bloc<HololiveEvent, HololiveState> {
     on<FetchSongsEvent>(_onFetchSongs);
     on<FetchItunesSongsEvent>(_onFetchItunesSongs);
     on<RefreshEvent>(_onRefresh);
+    on<FetchLiveVideosEvent>(_onFetchLiveVideos);
   }
 
   Future<void> _onFetchMembers(FetchMembersEvent event, Emitter<HololiveState> emit) async {
@@ -61,5 +62,16 @@ class HololiveBloc extends Bloc<HololiveEvent, HololiveState> {
 
   void _onRefresh(RefreshEvent event, Emitter<HololiveState> emit) {
     add(FetchMembersEvent());
+  }
+
+  Future<void> _onFetchLiveVideos(FetchLiveVideosEvent event, Emitter<HololiveState> emit) async {
+    emit(state.copyWith(liveVideosStatus: HololiveStatus.loading, liveVideos: []));
+
+    try {
+      final videos = await _repo.fetchLiveVideos();
+      emit(state.copyWith(liveVideosStatus: HololiveStatus.success, liveVideos: videos));
+    } catch (e) {
+      emit(state.copyWith(liveVideosStatus: HololiveStatus.error, liveVideosError: e.toString()));
+    }
   }
 }

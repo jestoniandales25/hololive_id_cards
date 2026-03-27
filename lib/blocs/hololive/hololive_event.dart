@@ -37,3 +37,5 @@ class FetchItunesSongsEvent extends HololiveEvent {
 }
 
 class RefreshEvent extends HololiveEvent {}
+
+class FetchLiveVideosEvent extends HololiveEvent {}

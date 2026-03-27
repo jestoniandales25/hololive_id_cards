@@ -22,6 +22,10 @@ class HololiveState extends Equatable {
   final String? itunesSongsError;
   final List<SongModel> itunesSongs;
 
+  final HololiveStatus liveVideosStatus;
+  final String? liveVideosError;
+  final List<VideoModel> liveVideos;
+
   const HololiveState({
     this.membersStatus = HololiveStatus.idle,
     this.membersError,
@@ -35,6 +39,9 @@ class HololiveState extends Equatable {
     this.itunesSongsStatus = HololiveStatus.idle,
     this.itunesSongsError,
     this.itunesSongs = const [],
+    this.liveVideosStatus = HololiveStatus.idle,
+    this.liveVideosError,
+    this.liveVideos = const [],
   });
 
   HololiveState copyWith({
@@ -50,6 +57,9 @@ class HololiveState extends Equatable {
     HololiveStatus? itunesSongsStatus,
     String? itunesSongsError,
     List<SongModel>? itunesSongs,
+    HololiveStatus? liveVideosStatus,
+    String? liveVideosError,
+    List<VideoModel>? liveVideos,
   }) {
     return HololiveState(
       membersStatus: membersStatus ?? this.membersStatus,
@@ -64,6 +74,9 @@ class HololiveState extends Equatable {
       itunesSongsStatus: itunesSongsStatus ?? this.itunesSongsStatus,
       itunesSongsError: itunesSongsError ?? this.itunesSongsError,
       itunesSongs: itunesSongs ?? this.itunesSongs,
+      liveVideosStatus: liveVideosStatus ?? this.liveVideosStatus,
+      liveVideosError: liveVideosError ?? this.liveVideosError,
+      liveVideos: liveVideos ?? this.liveVideos,
     );
   }
 
@@ -81,5 +94,8 @@ class HololiveState extends Equatable {
         itunesSongsStatus,
         itunesSongsError,
         itunesSongs,
+        liveVideosStatus,
+        liveVideosError,
+        liveVideos,
       ];
 }
