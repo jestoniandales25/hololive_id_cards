@@ -149,6 +149,31 @@ class HololiveRepository {
     }
   }
 
+  /// Fetches currently live and upcoming streams for the entire org.
+  Future<List<VideoModel>> fetchLiveVideos() async {
+    try {
+      final response = await _dio.get(
+        '/live',
+        queryParameters: {
+          'org': 'Hololive',
+          'status': 'live,upcoming',
+          'type': 'stream',
+          'limit': 50,
+        },
+      );
+
+      final List<dynamic> items = response.data is List
+          ? response.data
+          : (response.data['items'] ?? []);
+
+      return items
+          .map((json) => VideoModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } on DioException catch (e) {
+      throw _handleError(e);
+    }
+  }
+
   // ── Error Handler ─────────────────────────────
   Exception _handleError(DioException e) {
     switch (e.type) {
