@@ -16,7 +16,7 @@ class SkeletonMemberGrid extends StatelessWidget {
         childAspectRatio: 0.62,
       ),
       itemCount: 10, // show 10 skeleton cards
-      itemBuilder: (_, __) => const SkeletonMemberCard(),
+      itemBuilder: (_, _) => const SkeletonMemberCard(),
     );
   }
 }
@@ -58,7 +58,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (_, _) {
         final shimmerColor = Colors.white.withOpacity(_animation.value);
 
         return Container(
@@ -170,7 +170,7 @@ class SkeletonVideoList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       physics: const NeverScrollableScrollPhysics(), // no scroll during loading
       itemCount: 5, // show 5 skeleton cards
-      itemBuilder: (_, __) => const SkeletonVideoCard(),
+      itemBuilder: (_, _) => const SkeletonVideoCard(),
     );
   }
 }
@@ -213,7 +213,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (_, _) {
         final shimmerColor = Colors.white.withOpacity(_animation.value);
 
         return Container(

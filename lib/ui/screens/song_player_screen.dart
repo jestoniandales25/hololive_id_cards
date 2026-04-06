@@ -95,7 +95,7 @@ class _SongPlayerScreenState extends State<SongPlayerScreen> {
                     child: Image.network(
                       widget.song.artworkUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
+                      errorBuilder: (_, _, _) => Container(
                         color: const Color(0xFF1A1A2E),
                         child: const Icon(Icons.music_note, color: Colors.white24, size: 80),
                       ),

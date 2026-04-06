@@ -185,8 +185,9 @@ class HololiveRepository {
         final status = e.response?.statusCode;
         if (status == 401) return Exception('Invalid API key.');
         if (status == 403) return Exception('Access denied.');
-        if (status == 429)
+        if (status == 429) {
           return Exception('Rate limit exceeded. Try again later.');
+        }
         return Exception('Server error: $status');
       case DioExceptionType.connectionError:
         return Exception('No internet connection.');
