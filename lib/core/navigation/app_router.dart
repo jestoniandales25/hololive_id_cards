@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/auth/auth_bloc.dart';
+import '../../blocs/auth/auth_state.dart';
 import '../../data/models/song_model.dart';
 import '../../data/models/video_model.dart';
 import '../../ui/screens/bookmark_screen.dart';
 import '../../ui/screens/hololive_dashboard.dart';
+import '../../ui/screens/login_screen.dart';
 import '../../ui/screens/member_detail_screen.dart';
 import '../../ui/screens/member_songs_screen.dart';
 import '../../ui/screens/song_player_screen.dart';
@@ -10,6 +14,7 @@ import '../../ui/screens/video_player_screen.dart';
 
 class AppRouter {
   static const String root = '/';
+  static const String login = '/login';
   static const String memberDetail = '/member-detail';
   static const String memberSongs = '/member-songs';
   static const String songPlayer = '/song-player';
@@ -17,7 +22,15 @@ class AppRouter {
   static const String bookmarks = '/bookmarks';
 
   static Map<String, WidgetBuilder> get routes => {
-    root: (context) => const HololiveDashboard(),
+    login: (context) => const LoginScreen(),
+    root: (context) => BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            if (state is Authenticated) {
+              return const HololiveDashboard();
+            }
+            return const LoginScreen();
+          },
+        ),
     memberDetail: (context) => const HololiveDetailScreen(),
     memberSongs: (context) => const MemberSongsScreen(),
     songPlayer: (context) => SongPlayerScreen(
