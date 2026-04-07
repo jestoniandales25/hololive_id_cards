@@ -129,7 +129,7 @@ class _BookmarkCard extends StatelessWidget {
         color: const Color(0xFF1A1A2E),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF00ADB5).withOpacity(0.2),
+          color: const Color(0xFF00ADB5).withValues(alpha: 0.2),
         ),
       ),
       child: Row(

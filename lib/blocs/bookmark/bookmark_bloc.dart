@@ -1,12 +1,18 @@
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../data/models/video_model.dart';
 import 'bookmark_event.dart';
 import 'bookmark_state.dart';
 
 class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
-  static const String _storageKey = 'bookmarked_videos';
+  final _secureStorage = const FlutterSecureStorage();
+
+  String get _storageKey {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    return uid != null ? 'secure_bookmarks_$uid' : 'secure_bookmarks_guest';
+  }
 
   BookmarkBloc() : super(const BookmarkState()) {
     on<LoadBookmarksEvent>(_onLoadBookmarks);
@@ -16,8 +22,7 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
 
   Future<void> _onLoadBookmarks(
       LoadBookmarksEvent event, Emitter<BookmarkState> emit) async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? data = prefs.getString(_storageKey);
+    final String? data = await _secureStorage.read(key: _storageKey);
     if (data != null) {
       final Map<String, dynamic> decoded = jsonDecode(data);
       final bookmarkedMap = decoded.map(
@@ -29,6 +34,8 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
         ),
       );
       emit(BookmarkState(bookmarks: bookmarkedMap));
+    } else {
+      emit(const BookmarkState(bookmarks: {}));
     }
   }
 
@@ -53,7 +60,7 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
     }
 
     emit(BookmarkState(bookmarks: updatedBookmarks));
-    await _saveToPrefs(updatedBookmarks);
+    await _saveToSecurePrefs(updatedBookmarks);
   }
 
   Future<void> _onClearMemberBookmarks(
@@ -63,17 +70,16 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
     updatedBookmarks.remove(event.channelId);
 
     emit(BookmarkState(bookmarks: updatedBookmarks));
-    await _saveToPrefs(updatedBookmarks);
+    await _saveToSecurePrefs(updatedBookmarks);
   }
 
-  Future<void> _saveToPrefs(Map<String, List<VideoModel>> bookmarks) async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _saveToSecurePrefs(Map<String, List<VideoModel>> bookmarks) async {
     final encoded = jsonEncode(
       bookmarks.map(
         (channelId, videos) =>
             MapEntry(channelId, videos.map((v) => v.toJson()).toList()),
       ),
     );
-    await prefs.setString(_storageKey, encoded);
+    await _secureStorage.write(key: _storageKey, value: encoded);
   }
 }
