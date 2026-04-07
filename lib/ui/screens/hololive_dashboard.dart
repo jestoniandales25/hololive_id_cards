@@ -5,8 +5,11 @@ import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
+import 'package:hololive_id_cards/blocs/auth/auth_bloc.dart';
+import 'package:hololive_id_cards/blocs/auth/auth_event.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:hololive_id_cards/ui/widgets/skeleton_loading.dart';
+import 'package:hololive_id_cards/core/theme/app_colors.dart';
 
 class HololiveDashboard extends StatefulWidget {
   const HololiveDashboard({super.key});
@@ -29,7 +32,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +50,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
       decoration: const BoxDecoration(
-        color: Color(0xFF1A1A2E),
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
@@ -75,7 +78,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                       hintStyle: const TextStyle(color: Colors.white38),
                       prefixIcon: const Icon(
                         Icons.search,
-                        color: Color(0xFF00ADB5),
+                        color: AppColors.primary,
                       ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
@@ -92,7 +95,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                             )
                           : null,
                       filled: true,
-                      fillColor: const Color(0xFF0D0D0D),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -113,7 +116,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -134,7 +137,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                     const Text(
                       'hololive',
                       style: TextStyle(
-                        color: Color(0xFF00ADB5),
+                        color: AppColors.primary,
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 2,
@@ -155,6 +158,26 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                 ),
                 Row(
                   children: [
+                    // Search button
+                    GestureDetector(
+                      onTap: () => setState(() => _isSearching = true),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     // Bookmark button
                     BlocBuilder<BookmarkBloc, BookmarkState>(
                       builder: (context, state) => GestureDetector(
@@ -162,17 +185,17 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF00ADB5).withOpacity(0.15),
+                            color: AppColors.primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFF00ADB5).withOpacity(0.4),
+                              color: AppColors.primary.withValues(alpha: 0.4),
                             ),
                           ),
                           child: Stack(
                             children: [
                               const Icon(
                                 Icons.bookmark_rounded,
-                                color: Color(0xFF00ADB5),
+                                color: AppColors.primary,
                                 size: 20,
                               ),
                               if (state.allBookmarks.isNotEmpty)
@@ -194,21 +217,21 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // Search button
+                    // Sign out button
                     GestureDetector(
-                      onTap: () => setState(() => _isSearching = true),
+                      onTap: () => context.read<AuthBloc>().add(SignOut()),
                       child: Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00ADB5).withOpacity(0.15),
+                          color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: const Color(0xFF00ADB5).withOpacity(0.4),
+                            color: AppColors.primary.withValues(alpha: 0.4),
                           ),
                         ),
                         child: const Icon(
-                          Icons.search_rounded,
-                          color: Color(0xFF00ADB5),
+                          Icons.logout_rounded,
+                          color: AppColors.primary,
                           size: 20,
                         ),
                       ),
@@ -254,7 +277,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00ADB5),
+                    backgroundColor: AppColors.primary,
                   ),
                 ),
               ],
@@ -265,8 +288,8 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
         // Empty
         if (state.members.isEmpty) {
           return RefreshIndicator(
-            color: const Color(0xFF00ADB5),
-            backgroundColor: const Color(0xFF1A1A2E),
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
             onRefresh: () async {
               context.read<HololiveBloc>().add(RefreshEvent());
               await Future.delayed(const Duration(seconds: 1));
@@ -301,8 +324,8 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
 
         if (filteredMembers.isEmpty) {
           return RefreshIndicator(
-            color: const Color(0xFF00ADB5),
-            backgroundColor: const Color(0xFF1A1A2E),
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
             onRefresh: () async {
               context.read<HololiveBloc>().add(RefreshEvent());
               await Future.delayed(const Duration(seconds: 1));
@@ -324,8 +347,8 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
 
         // ✅ Real card grid
         return RefreshIndicator(
-          color: const Color(0xFF00ADB5),
-          backgroundColor: const Color(0xFF1A1A2E),
+          color: AppColors.primary,
+          backgroundColor: AppColors.surface,
           onRefresh: () async {
             context.read<HololiveBloc>().add(RefreshEvent());
             await Future.delayed(const Duration(seconds: 1));
@@ -366,22 +389,22 @@ class _MemberCard extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1A1A2E),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF00ADB5).withOpacity(0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: const Color(0xFF00ADB5).withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -401,14 +424,14 @@ class _MemberCard extends StatelessWidget {
                       member.avatarUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, _, _) => Container(
-                        color: const Color(0xFF0D0D0D),
+                        color: AppColors.background,
                         child: Center(
                           child: Text(
                             member.displayName.isNotEmpty
                                 ? member.displayName[0].toUpperCase()
                                 : '?',
                             style: const TextStyle(
-                              color: Color(0xFF00ADB5),
+                              color: AppColors.primary,
                               fontSize: 48,
                               fontWeight: FontWeight.bold,
                             ),
@@ -431,8 +454,8 @@ class _MemberCard extends StatelessWidget {
                           colors: [
                             Colors.transparent,
                             Colors.transparent,
-                            const Color(0xFF1A1A2E).withOpacity(0.6),
-                            const Color(0xFF1A1A2E),
+                            AppColors.surface.withValues(alpha: 0.6),
+                            AppColors.surface,
                           ],
                           stops: const [0.0, 0.5, 0.8, 1.0],
                         ),
@@ -451,16 +474,16 @@ class _MemberCard extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.65),
+                          color: Colors.black.withValues(alpha: 0.65),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: const Color(0xFF00ADB5).withOpacity(0.6),
+                            color: AppColors.primary.withValues(alpha: 0.6),
                           ),
                         ),
                         child: Text(
                           member.group!,
                           style: const TextStyle(
-                            color: Color(0xFF00ADB5),
+                            color: AppColors.primary,
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
@@ -483,8 +506,8 @@ class _MemberCard extends StatelessWidget {
                         boxShadow: [
                           BoxShadow(
                             color: member.inactive
-                                ? Colors.grey.withOpacity(0.4)
-                                : Colors.greenAccent.withOpacity(0.6),
+                                ? Colors.grey.withValues(alpha: 0.4)
+                                : Colors.greenAccent.withValues(alpha: 0.6),
                             blurRadius: 6,
                             spreadRadius: 2,
                           ),
@@ -536,13 +559,13 @@ class _MemberCard extends StatelessWidget {
                         const Icon(
                           Icons.people_rounded,
                           size: 11,
-                          color: Color(0xFF00ADB5),
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           member.formattedSubs,
                           style: const TextStyle(
-                            color: Color(0xFF00ADB5),
+                            color: AppColors.primary,
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                           ),

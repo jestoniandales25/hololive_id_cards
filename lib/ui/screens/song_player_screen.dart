@@ -84,7 +84,7 @@ class _SongPlayerScreenState extends State<SongPlayerScreen> {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF00ADB5).withOpacity(0.2),
+                        color: const Color(0xFF00ADB5).withValues(alpha: 0.2),
                         blurRadius: 40,
                         offset: const Offset(0, 20),
                       ),
