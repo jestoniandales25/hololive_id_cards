@@ -59,14 +59,14 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
     return AnimatedBuilder(
       animation: _animation,
       builder: (_, __) {
-        final shimmerColor = Colors.white.withOpacity(_animation.value);
+        final shimmerColor = Colors.white.withValues(alpha: _animation.value);
 
         return Container(
           decoration: BoxDecoration(
             color: const Color(0xFF1A1A2E),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: const Color(0xFF00ADB5).withOpacity(0.1),
+              color: const Color(0xFF00ADB5).withValues(alpha: 0.1),
             ),
           ),
           child: Column(
@@ -76,7 +76,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                 flex: 5,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: shimmerColor.withOpacity(_animation.value * 0.3),
+                    color: shimmerColor.withValues(alpha: _animation.value * 0.3),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(16),
                     ),
@@ -84,7 +84,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                   child: Center(
                     child: Icon(
                       Icons.person_rounded,
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       size: 48,
                     ),
                   ),
@@ -105,7 +105,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                         height: 12,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
+                          color: shimmerColor.withValues(alpha: 
                               _animation.value * 0.3),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -117,7 +117,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                         height: 10,
                         width: 80,
                         decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
+                          color: shimmerColor.withValues(alpha: 
                               _animation.value * 0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -131,7 +131,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                             height: 10,
                             width: 10,
                             decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
+                              color: shimmerColor.withValues(alpha: 
                                   _animation.value * 0.2),
                               shape: BoxShape.circle,
                             ),
@@ -141,7 +141,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
                             height: 10,
                             width: 60,
                             decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
+                              color: shimmerColor.withValues(alpha: 
                                   _animation.value * 0.2),
                               borderRadius: BorderRadius.circular(6),
                             ),
@@ -214,7 +214,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
     return AnimatedBuilder(
       animation: _animation,
       builder: (_, __) {
-        final shimmerColor = Colors.white.withOpacity(_animation.value);
+        final shimmerColor = Colors.white.withValues(alpha: _animation.value);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 10),
@@ -229,7 +229,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                 width: 120,
                 height: 72,
                 decoration: BoxDecoration(
-                  color: shimmerColor.withOpacity(_animation.value * 0.3),
+                  color: shimmerColor.withValues(alpha: _animation.value * 0.3),
                   borderRadius: const BorderRadius.horizontal(
                     left: Radius.circular(12),
                   ),
@@ -237,7 +237,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                 child: Center(
                   child: Icon(
                     Icons.video_library_rounded,
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     size: 24,
                   ),
                 ),
@@ -256,7 +256,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                         height: 12,
                         width: double.infinity,
                         decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
+                          color: shimmerColor.withValues(alpha: 
                             _animation.value * 0.3,
                           ),
                           borderRadius: BorderRadius.circular(6),
@@ -267,7 +267,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                         height: 12,
                         width: 100,
                         decoration: BoxDecoration(
-                          color: shimmerColor.withOpacity(
+                          color: shimmerColor.withValues(alpha: 
                             _animation.value * 0.3,
                           ),
                           borderRadius: BorderRadius.circular(6),
@@ -282,7 +282,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                             height: 10,
                             width: 50,
                             decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
+                              color: shimmerColor.withValues(alpha: 
                                 _animation.value * 0.2,
                               ),
                               borderRadius: BorderRadius.circular(6),
@@ -293,7 +293,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
                             height: 16,
                             width: 16,
                             decoration: BoxDecoration(
-                              color: shimmerColor.withOpacity(
+                              color: shimmerColor.withValues(alpha: 
                                 _animation.value * 0.2,
                               ),
                               shape: BoxShape.circle,
