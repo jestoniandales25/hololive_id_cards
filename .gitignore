@@ -49,6 +49,10 @@ app.*.map.json
 .env
 .env.local
 
+# Firebase Secrets
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
 # Generated dart files - never commit these
 lib/core/env/env.g.dart
 lib/**/*.freezed.dart
