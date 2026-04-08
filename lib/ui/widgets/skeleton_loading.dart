@@ -58,7 +58,7 @@ class _SkeletonMemberCardState extends State<SkeletonMemberCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (context, child) {
         final shimmerColor = Colors.white.withValues(alpha: _animation.value);
 
         return Container(
@@ -213,7 +213,7 @@ class _SkeletonVideoCardState extends State<SkeletonVideoCard>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder: (_, __) {
+      builder: (context, child) {
         final shimmerColor = Colors.white.withValues(alpha: _animation.value);
 
         return Container(
