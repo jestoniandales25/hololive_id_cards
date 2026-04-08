@@ -4,10 +4,14 @@ import 'package:hololive_id_cards/core/env/env.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:hololive_id_cards/data/models/song_model.dart';
 import 'package:hololive_id_cards/data/models/video_model.dart';
+import 'package:hololive_id_cards/data/network/holodex_client.dart';
+import 'package:hololive_id_cards/data/network/itunes_client.dart';
 
 class HololiveRepository {
   late final Dio _dio;
   late final Dio _itunesDio;
+  late final HolodexClient _holodexClient;
+  late final ItunesClient _itunesClient;
 
   HololiveRepository() {
     _dio = Dio(
@@ -33,24 +37,28 @@ class HololiveRepository {
     _dio.interceptors.add(
       LogInterceptor(request: true, responseBody: false, error: true),
     );
+
+    _holodexClient = HolodexClient(_dio);
+    _itunesClient = ItunesClient(_itunesDio);
   }
 
   Future<List<MemberModel>> fetchMembers() async {
     try {
-      final response = await _dio.get(
-        '/channels',
-        queryParameters: {
-          'org': 'Hololive',
-          'type': 'vtuber',
-          'limit': 50,
-          'sort': 'subscriber_count',
-          'order': 'desc',
-        },
-      );
+      final List<MemberModel> allMembers = [];
+      int offset = 0;
+      const int limit = 50; // The API strictly enforces a max limit of 50
 
-      return (response.data as List)
-          .map((json) => MemberModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      while (true) {
+        final List<MemberModel> batch = await _holodexClient.fetchMembers(
+          'Hololive', 'vtuber', limit, offset, 'subscriber_count', 'desc'
+        );
+        
+        allMembers.addAll(batch);
+        
+        if (batch.length < limit) break; // If we received less than 50, we've reached the end
+        offset += limit;
+      }
+      return allMembers;
     } on DioException catch (e) {
       throw _handleError(e);
     }
@@ -58,20 +66,13 @@ class HololiveRepository {
 
   Future<List<VideoModel>> fetchChannelVideos(String channelId) async {
     try {
-      final response = await _dio.get(
-        '/channels/$channelId/videos',
-        queryParameters: {
-          'limit': 100, // increased to fetch more videos
-          'status': 'live,upcoming,past',
-          'type': 'stream',
-          'order': 'latest',
-        },
+      final dynamic responseData = await _holodexClient.fetchChannelVideos(
+        channelId, 100, 'live,upcoming,past', 'stream', 'latest'
       );
 
-      // API returns either a list or {items: [...]}
-      final List<dynamic> items = response.data is List
-          ? response.data
-          : (response.data['items'] ?? []);
+      final List<dynamic> items = responseData is List
+          ? responseData
+          : (responseData['items'] ?? []);
 
       return items
           .map((json) => VideoModel.fromJson(json as Map<String, dynamic>))
@@ -83,19 +84,13 @@ class HololiveRepository {
 
   Future<List<VideoModel>> fetchChannelSongs(String channelId) async {
     try {
-      final response = await _dio.get(
-        '/channels/$channelId/videos',
-        queryParameters: {
-          'limit': 100, // increased to fetch more base videos to filter for songs
-          'status': 'live,upcoming,past',
-          'type': 'stream,clip', // getting both streams and clips to maximize chance of finding songs
-          'order': 'latest',
-        },
+      final dynamic responseData = await _holodexClient.fetchChannelVideos(
+        channelId, 100, 'live,upcoming,past', 'stream,clip', 'latest'
       );
 
-      final List<dynamic> items = response.data is List
-          ? response.data
-          : (response.data['items'] ?? []);
+      final List<dynamic> items = responseData is List
+          ? responseData
+          : (responseData['items'] ?? []);
 
       final validTopics = [
         'music',
@@ -122,21 +117,13 @@ class HololiveRepository {
   /// Fetches official songs/singles from Apple iTunes for a given member name.
   Future<List<SongModel>> fetchItunesSongs(String memberName) async {
     try {
-      final response = await _itunesDio.get(
-        '/search',
-        queryParameters: {
-          'term': memberName,
-          'media': 'music',
-          'entity': 'song',
-          'country': 'us',
-          'limit': 50,
-        },
+      final dynamic responseData = await _itunesClient.fetchItunesSongs(
+        memberName, 'music', 'song', 'us', 50
       );
 
-      // iTunes sometimes returns raw JSON string; decode manually if needed
-      final dynamic raw = response.data is String
-          ? jsonDecode(response.data as String)
-          : response.data;
+      final dynamic raw = responseData is String
+          ? jsonDecode(responseData)
+          : responseData;
 
       final List<dynamic> results =
           (raw as Map<String, dynamic>)['results'] ?? [];
@@ -152,19 +139,13 @@ class HololiveRepository {
   /// Fetches currently live and upcoming streams for the entire org.
   Future<List<VideoModel>> fetchLiveVideos() async {
     try {
-      final response = await _dio.get(
-        '/live',
-        queryParameters: {
-          'org': 'Hololive',
-          'status': 'live,upcoming',
-          'type': 'stream',
-          'limit': 50,
-        },
+      final dynamic responseData = await _holodexClient.fetchLiveVideos(
+        'Hololive', 'live,upcoming', 'stream', 50
       );
 
-      final List<dynamic> items = response.data is List
-          ? response.data
-          : (response.data['items'] ?? []);
+      final List<dynamic> items = responseData is List
+          ? responseData
+          : (responseData['items'] ?? []);
 
       return items
           .map((json) => VideoModel.fromJson(json as Map<String, dynamic>))
