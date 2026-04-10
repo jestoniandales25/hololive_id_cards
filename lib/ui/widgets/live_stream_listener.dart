@@ -19,16 +19,21 @@ class LiveStreamListener extends StatefulWidget {
 
 class _LiveStreamListenerState extends State<LiveStreamListener> {
   Timer? _pollingTimer;
+  Timer? _rotationTimer;
+  ToastificationItem? _currentToast;
+
+  /// All video IDs we've already seen and marked for display.
   final Set<String> _notifiedVideoIds = {};
+
+  /// Queue of new videos waiting to be shown one by one.
+  final List<VideoModel> _queue = [];
 
   @override
   void initState() {
     super.initState();
-    // Fetch live streams immediately upon loading app
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<HololiveBloc>().add(FetchLiveVideosEvent());
     });
-    // Poll for live streams every 60 seconds universally
     _pollingTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       if (mounted) {
         context.read<HololiveBloc>().add(FetchLiveVideosEvent());
@@ -39,7 +44,56 @@ class _LiveStreamListenerState extends State<LiveStreamListener> {
   @override
   void dispose() {
     _pollingTimer?.cancel();
+    _rotationTimer?.cancel();
     super.dispose();
+  }
+
+  /// Dismisses any active toast and shows the next one in the queue.
+  void _showNext(BuildContext context) {
+    if (_queue.isEmpty) return;
+
+    // Dismiss previous notification before showing the next
+    if (_currentToast != null) {
+      toastification.dismiss(_currentToast!);
+      _currentToast = null;
+    }
+
+    final video = _queue.removeAt(0);
+    final isLive = video.isLive;
+
+    _currentToast = toastification.show(
+      context: context,
+      type: isLive ? ToastificationType.error : ToastificationType.info,
+      style: ToastificationStyle.flat,
+      title: Text(
+        isLive ? '🔴 LIVE NOW' : '🕐 Upcoming Stream',
+        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+      description: Text(
+        video.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: Colors.white70),
+      ),
+      alignment: Alignment.topCenter,
+      autoCloseDuration: const Duration(seconds: 5),
+      icon: Icon(
+        isLive ? Icons.stream_rounded : Icons.schedule_rounded,
+        color: isLive ? Colors.redAccent : const Color(0xFF00ADB5),
+      ),
+      showProgressBar: true,
+      primaryColor: isLive ? Colors.redAccent : const Color(0xFF00ADB5),
+      backgroundColor: const Color(0xFF1A1A2E),
+      foregroundColor: Colors.white,
+    );
+
+    // If there are more in the queue, rotate to the next after 5 seconds
+    if (_queue.isNotEmpty) {
+      _rotationTimer?.cancel();
+      _rotationTimer = Timer(const Duration(seconds: 5), () {
+        if (mounted) _showNext(context);
+      });
+    }
   }
 
   @override
@@ -51,99 +105,22 @@ class _LiveStreamListenerState extends State<LiveStreamListener> {
       listener: (context, state) {
         if (state.liveVideos.isEmpty) return;
 
-        // Find new live videos that haven't been notified yet
-        final newActiveVideos = state.liveVideos.where((v) {
-          final isLiveOnly = v.isLive;
-          final isNew = !_notifiedVideoIds.contains(v.id);
-          return isLiveOnly && isNew;
+        final newVideos = state.liveVideos.where((v) {
+          return (v.isLive || v.isUpcoming) && !_notifiedVideoIds.contains(v.id);
         }).toList();
 
-        if (newActiveVideos.isEmpty) return;
+        if (newVideos.isEmpty) return;
 
-        // Mark all as notified
-        for (final video in newActiveVideos) {
+        for (final video in newVideos) {
           _notifiedVideoIds.add(video.id);
+          _queue.add(video);
         }
 
-        if (newActiveVideos.length == 1) {
-          final video = newActiveVideos.first;
-          toastification.show(
-            context: context,
-            type: video.isLive ? ToastificationType.error : ToastificationType.info,
-            style: ToastificationStyle.flat,
-            title: Text(
-              video.isLive ? 'LIVE NOW' : 'Upcoming Stream',
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            description: Text(
-              video.title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white70),
-            ),
-            alignment: Alignment.topCenter,
-            autoCloseDuration: const Duration(seconds: 5),
-            icon: Icon(
-              video.isLive ? Icons.stream_rounded : Icons.schedule_rounded,
-              color: video.isLive ? Colors.redAccent : const Color(0xFF00ADB5),
-            ),
-            showProgressBar: false,
-            primaryColor: video.isLive ? Colors.redAccent : const Color(0xFF00ADB5),
-            backgroundColor: const Color(0xFF1A1A2E),
-            foregroundColor: Colors.white,
-          );
-        } else {
-          // Aggregate toast
-          final liveCount = newActiveVideos.where((v) => v.isLive).length;
-          final upcomingCount = newActiveVideos.length - liveCount;
-
-          String title = 'Hololive Streams';
-          String desc = '';
-          IconData iconData = Icons.stream_rounded;
-          Color pColor = const Color(0xFF00ADB5);
-          ToastificationType tType = ToastificationType.info;
-
-          if (liveCount > 0 && upcomingCount > 0) {
-            desc = '$liveCount members Live Now, $upcomingCount Upcoming';
-            title = 'Updates Available';
-            pColor = Colors.redAccent;
-            tType = ToastificationType.error;
-          } else if (liveCount > 0) {
-            desc = '$liveCount members are Live Now!';
-            title = 'LIVE NOW';
-            pColor = Colors.redAccent;
-            tType = ToastificationType.error;
-          } else {
-            desc = '$upcomingCount new Upcoming Streams!';
-            title = 'Upcoming Streams';
-            iconData = Icons.schedule_rounded;
-          }
-
-          toastification.show(
-            context: context,
-            type: tType,
-            style: ToastificationStyle.flat,
-            title: Text(
-              title,
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            description: Text(
-              desc,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white70),
-            ),
-            alignment: Alignment.topCenter,
-            autoCloseDuration: const Duration(seconds: 5),
-            icon: Icon(iconData, color: pColor),
-            showProgressBar: false,
-            primaryColor: pColor,
-            backgroundColor: const Color(0xFF1A1A2E),
-            foregroundColor: Colors.white,
-          );
-        }
+        // Start showing immediately (dismisses any current toast first)
+        _rotationTimer?.cancel();
+        _showNext(context);
       },
-      child: widget.child, // Pass down the child
+      child: widget.child,
     );
   }
 }
