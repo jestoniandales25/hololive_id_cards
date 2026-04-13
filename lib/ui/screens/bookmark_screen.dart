@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
@@ -6,6 +7,7 @@ import 'package:hololive_id_cards/blocs/bookmark/bookmark_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/video_model.dart';
 
+@RoutePage()
 class BookmarkScreen extends StatelessWidget {
   const BookmarkScreen({super.key});
 
@@ -32,7 +34,7 @@ class BookmarkScreen extends StatelessWidget {
                       Icons.arrow_back_ios_new_rounded,
                       color: Colors.white,
                     ),
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => context.router.pop(),
                   ),
                   const SizedBox(width: 4),
                   const Expanded(

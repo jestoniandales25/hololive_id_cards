@@ -1,9 +1,11 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import '../../data/models/video_model.dart';
 
+@RoutePage()
 class VideoPlayerScreen extends StatefulWidget {
   final VideoModel video;
 

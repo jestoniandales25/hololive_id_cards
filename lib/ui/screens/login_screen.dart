@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toastification/toastification.dart';
@@ -5,8 +6,9 @@ import 'package:toastification/toastification.dart';
 import '../../blocs/auth/auth_bloc.dart';
 import '../../blocs/auth/auth_event.dart';
 import '../../blocs/auth/auth_state.dart';
-import '../../core/navigation/app_router.dart';
+import '../../core/navigation/app_router.gr.dart';
 
+@RoutePage()
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -24,7 +26,7 @@ class LoginScreen extends StatelessWidget {
               style: ToastificationStyle.flat,
               autoCloseDuration: const Duration(seconds: 3),
             );
-            Navigator.of(context).pushReplacementNamed(AppRouter.root);
+            context.router.replace(const HololiveDashboardRoute());
           } else if (state is AuthError) {
             toastification.show(
               context: context,

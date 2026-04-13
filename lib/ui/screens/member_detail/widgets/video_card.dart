@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../blocs/bookmark/bookmark_bloc.dart';
@@ -6,6 +7,7 @@ import '../../../../blocs/bookmark/bookmark_state.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../data/models/member_model.dart';
 import '../../../../data/models/video_model.dart';
+import '../../../../core/navigation/app_router.gr.dart';
 
 class VideoCard extends StatelessWidget {
   final VideoModel video;
@@ -20,8 +22,7 @@ class VideoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          Navigator.pushNamed(context, '/video-player', arguments: video),
+      onTap: () => context.router.push(VideoPlayerRoute(video: video)),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(

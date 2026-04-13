@@ -1,7 +1,9 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:hololive_id_cards/data/models/song_model.dart';
 
+@RoutePage()
 class SongPlayerScreen extends StatefulWidget {
   final SongModel song;
 

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_bloc.dart';
@@ -5,14 +6,15 @@ import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:hololive_id_cards/data/models/song_model.dart';
+import 'package:hololive_id_cards/core/navigation/app_router.gr.dart';
 
+@RoutePage()
 class MemberSongsScreen extends StatelessWidget {
-  const MemberSongsScreen({super.key});
+  final MemberModel member;
+  const MemberSongsScreen({super.key, required this.member});
 
   @override
   Widget build(BuildContext context) {
-    final member = ModalRoute.of(context)!.settings.arguments as MemberModel;
-
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       body: Column(
@@ -31,7 +33,7 @@ class MemberSongsScreen extends StatelessWidget {
                         Icons.arrow_back_ios_new_rounded,
                         color: Colors.white,
                       ),
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.router.maybePop(),
                     ),
                     // Avatar
                     CircleAvatar(
@@ -212,11 +214,7 @@ class _ItunesSongCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/song-player',
-        arguments: song,
-      ),
+      onTap: () => context.router.push(SongPlayerRoute(song: song)),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hololive_id_cards/blocs/bookmark/bookmark_bloc.dart';
@@ -7,18 +8,20 @@ import 'package:hololive_id_cards/blocs/hololive/hololive_event.dart';
 import 'package:hololive_id_cards/blocs/hololive/hololive_state.dart';
 import 'package:hololive_id_cards/blocs/auth/auth_bloc.dart';
 import 'package:hololive_id_cards/blocs/auth/auth_event.dart';
+import 'package:hololive_id_cards/core/navigation/app_router.gr.dart';
 import 'package:hololive_id_cards/data/models/member_model.dart';
 import 'package:hololive_id_cards/ui/widgets/skeleton_loading.dart';
 import 'package:hololive_id_cards/core/theme/app_colors.dart';
 
-class HololiveDashboard extends StatefulWidget {
-  const HololiveDashboard({super.key});
+@RoutePage()
+class HololiveDashboardScreen extends StatefulWidget {
+  const HololiveDashboardScreen({super.key});
 
   @override
-  State<HololiveDashboard> createState() => _HololiveDashboardState();
+  State<HololiveDashboardScreen> createState() => _HololiveDashboardScreenState();
 }
 
-class _HololiveDashboardState extends State<HololiveDashboard> {
+class _HololiveDashboardScreenState extends State<HololiveDashboardScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isSearching = false;
@@ -181,7 +184,7 @@ class _HololiveDashboardState extends State<HololiveDashboard> {
                     // Bookmark button
                     BlocBuilder<BookmarkBloc, BookmarkState>(
                       builder: (context, state) => GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/bookmarks'),
+                        onTap: () => context.router.push(const BookmarkRoute()),
                         child: Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
@@ -385,7 +388,7 @@ class _MemberCard extends StatelessWidget {
         final bloc = context.read<HololiveBloc>();
         bloc.add(FetchVideosEvent(member.id));
         bloc.add(FetchSongsEvent(member.id));
-        Navigator.pushNamed(context, '/member-detail', arguments: member);
+        context.router.push(HololiveDetailRoute(member: member));
       },
       child: Container(
         decoration: BoxDecoration(

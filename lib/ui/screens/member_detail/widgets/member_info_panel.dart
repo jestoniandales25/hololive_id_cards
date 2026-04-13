@@ -6,6 +6,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../data/models/member_model.dart';
 import 'detail_components.dart';
 
+import 'package:auto_route/auto_route.dart';
+import '../../../../core/navigation/app_router.gr.dart';
+
 class MemberInfoPanel extends StatelessWidget {
   final MemberModel member;
 
@@ -37,7 +40,7 @@ class MemberInfoPanel extends StatelessWidget {
                     Icons.arrow_back_ios_new_rounded,
                     color: Colors.white,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.router.pop(),
                 ),
               ),
             ],
@@ -138,11 +141,7 @@ class MemberInfoPanel extends StatelessWidget {
                 context.read<HololiveBloc>().add(
                   FetchItunesSongsEvent(searchName),
                 );
-                Navigator.pushNamed(
-                  context,
-                  '/member-songs',
-                  arguments: member,
-                );
+                context.router.push(MemberSongsRoute(member: member));
               },
               child: Container(
                 width: double.infinity,
