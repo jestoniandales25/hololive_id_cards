@@ -9,6 +9,7 @@ import 'blocs/bookmark/bookmark_event.dart';
 import 'blocs/hololive/hololive_bloc.dart';
 import 'blocs/hololive/hololive_event.dart';
 import 'core/navigation/app_router.dart';
+import 'core/navigation/app_router.gr.dart';
 import 'core/theme/app_theme.dart';
 import 'data/repositories/auth_repository.dart';
 import 'data/repositories/hololive_repository.dart';
@@ -55,23 +56,26 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appRouter = getIt<AppRouter>();
+
     return ToastificationWrapper(
-      child: MaterialApp(
-        title: 'Hololive Members',
+      child: MaterialApp.router(
+        title: 'Hololive ID Cards',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
+        routerConfig: appRouter.config(),
         builder: (context, child) {
           return BlocListener<AuthBloc, AuthState>(
             listener: (context, state) {
-              if (state is Authenticated || state is Unauthenticated) {
+              if (state is Authenticated) {
                 context.read<BookmarkBloc>().add(LoadBookmarksEvent());
+              } else if (state is Unauthenticated) {
+                appRouter.replaceAll([const LoginRoute()]);
               }
             },
             child: LiveStreamListener(child: child!),
           );
         },
-        initialRoute: AppRouter.root,
-        routes: AppRouter.routes,
       ),
     );
   }
