@@ -57,6 +57,7 @@ ios/Runner/GoogleService-Info.plist
 lib/core/env/env.g.dart
 lib/**/*.freezed.dart
 lib/**/*.g.dart
+lib/**/*.gr.dart
 
 # Flutter/Dart build files
 .dart_tool/
