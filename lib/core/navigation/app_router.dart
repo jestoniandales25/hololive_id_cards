@@ -1,44 +1,48 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../blocs/auth/auth_state.dart';
-import '../../data/models/song_model.dart';
-import '../../data/models/video_model.dart';
-import '../../ui/screens/bookmark_screen.dart';
-import '../../ui/screens/hololive_dashboard.dart';
-import '../../ui/screens/login_screen.dart';
-import '../../ui/screens/member_detail_screen.dart';
-import '../../ui/screens/member_songs_screen.dart';
-import '../../ui/screens/song_player_screen.dart';
-import '../../ui/screens/video_player_screen.dart';
+import 'package:auto_route/auto_route.dart';
+import 'app_router.gr.dart';
+import 'auth_guard.dart';
 
-class AppRouter {
-  static const String root = '/';
-  static const String login = '/login';
-  static const String memberDetail = '/member-detail';
-  static const String memberSongs = '/member-songs';
-  static const String songPlayer = '/song-player';
-  static const String videoPlayer = '/video-player';
-  static const String bookmarks = '/bookmarks';
+@AutoRouterConfig()
+class AppRouter extends RootStackRouter {
+  @override
+  List<AutoRoute> get routes => [
+        // Login route - no guard needed
+        AutoRoute(
+          page: LoginRoute.page,
+          path: '/login',
+        ),
 
-  static Map<String, WidgetBuilder> get routes => {
-    login: (context) => const LoginScreen(),
-    root: (context) => BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is Authenticated) {
-              return const HololiveDashboard();
-            }
-            return const LoginScreen();
-          },
+        // Protected routes
+        AutoRoute(
+          page: HololiveDashboardRoute.page,
+          path: '/',
+          initial: true,
+          guards: [AuthGuard()],
         ),
-    memberDetail: (context) => const HololiveDetailScreen(),
-    memberSongs: (context) => const MemberSongsScreen(),
-    songPlayer: (context) => SongPlayerScreen(
-          song: ModalRoute.of(context)!.settings.arguments as SongModel,
+        AutoRoute(
+          page: HololiveDetailRoute.page,
+          path: '/detail',
+          guards: [AuthGuard()],
         ),
-    videoPlayer: (context) => VideoPlayerScreen(
-          video: ModalRoute.of(context)!.settings.arguments as VideoModel,
+        AutoRoute(
+          page: MemberSongsRoute.page,
+          path: '/songs',
+          guards: [AuthGuard()],
         ),
-    bookmarks: (context) => const BookmarkScreen(),
-  };
+        AutoRoute(
+          page: SongPlayerRoute.page,
+          path: '/song-player',
+          guards: [AuthGuard()],
+        ),
+        AutoRoute(
+          page: VideoPlayerRoute.page,
+          path: '/video-player',
+          guards: [AuthGuard()],
+        ),
+        AutoRoute(
+          page: BookmarkRoute.page,
+          path: '/bookmarks',
+          guards: [AuthGuard()],
+        ),
+      ];
 }
