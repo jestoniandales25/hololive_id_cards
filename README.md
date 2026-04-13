@@ -6,10 +6,13 @@ A Flutter application that lets you browse Hololive VTuber members in a card-bas
 
 ## Features
 
-- **Google Firebase Authentication** — Secure login system! The root router acts as an Auth Wrapper, securely protecting the app unauthenticated users.
+- **Type-Safe Navigation (AutoRoute)** — Migrated from string-based routes to a declarative, type-safe navigation system with guarded authentication.
+- **Type-Safe Networking (Retrofit)** — Replaced manual Dio builders with Retrofit client interfaces for robust API communication.
+- **Unlimited Talent Pagination** — Custom pagination logic bypasses API limits to fetch the entire talent roster (86+) flawlessly.
 - **Card-Based Member Grid** — Browse all Hololive talents in a 2-column scrollable playing card layout.
 - **Dependency Injection (get_it)** — Decoupled repositories utilizing Service Locators for scalable performance and testability.
 - **Persistent Secure Bookmarks** — Save your favorite videos per member! Using `flutter_secure_storage`, bookmarks are securely encrypted locally via Android EncryptedSharedPreferences and iOS Keychain, natively isolated to your unique Authentication user ID (`uid`).
+- **Optimized Logout & Redirection** — Immediate UI transition and auto-redirection to Login screen upon sign-out.
 - **Profile Picture Backgrounds** — Each card features the member's official Hololive profile picture.
 - **Member Video Page** — Tap any card to navigate to a detail screen showing recent streams.
 - **In-App Video Player** — Watch videos inside the app using `youtube_player_iframe`.
@@ -35,13 +38,14 @@ lib/
 │   ├── di/                             # get_it Dependency Injection 
 │   │   └── injection.dart
 │   ├── env/                            # Environment & API key management
-│   ├── navigation/                     # Protected Global Routing
+│   ├── navigation/                     # AutoRoute config, Guards, and Routes
+│   ├── network/                        # Retrofit client interfaces
 │   └── theme/                          # AppTheme and Semantic colors
 ├── data/
 │   ├── models/                         # Freezed data models
-│   └── repositories/                   # Interfaces strictly decoupled from UI
-│       ├── auth_repository.dart        # Firebase logic wrapped cleanly
-│       └── hololive_repository.dart    # Dio HTTP APIs
+│   └── repositories/                   # Concrete logic & Pagination handling
+│       ├── auth_repository.dart        # Optimized session management
+│       └── hololive_repository.dart    # Paginated API requests
 └── ui/
     └── screens/                        # App screens
         ├── splash_screen.dart
@@ -102,6 +106,8 @@ dependencies:
   get_it: ^9.2.1                   # Dependency Injection Locator
   flutter_secure_storage: ^10.0.0  # Keystore-based local encryption
   dio: ^5.7.0                      # Robust HTTP requests
+  retrofit: ^4.9.2                 # Type-safe API client
+  auto_route: ^11.1.0              # Type-safe navigation & guards
   envied: ^1.3.3                   # Compile-time secret obfuscation
   freezed_annotation: ^3.1.0       # Immutable data templates
   youtube_player_iframe: ^5.1.1    # In-app YouTube player
