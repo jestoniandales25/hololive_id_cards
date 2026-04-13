@@ -39,10 +39,8 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      await Future.wait([
-        _firebaseAuth.signOut(),
-        _googleSignIn.signOut(),
-      ]);
+      await _firebaseAuth.signOut();
+      await _googleSignIn.signOut();
     } catch (e) {
       throw Exception('Failed to sign out: $e');
     }
